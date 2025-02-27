@@ -77,11 +77,11 @@
         <button onclick="saveNote()">Lưu Ghi Chú</button>
         <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v1.1</div>
+        <div class="version">Phiên bản: v1.2</div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzo8GBLoKjPa8NL5G71QjaIJIQ2Y_xU62Cqzn0qY0YcAKjwlnIpN1ZXRrWpbeYaAYVy4Q/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMUqVYpfnGH9PiZPk-xx4K7-USQEz1CEjaj82rigkk44eM5db3BuywW8jpcUGFs0I/exec";
         const username = localStorage.getItem('loggedInUser');
 
         window.onload = function() {
@@ -104,24 +104,30 @@
 
             message.textContent = 'Đang lưu...';
 
+            const payload = { 
+                action: 'saveNote', 
+                username: username, 
+                note: note 
+            };
+            console.log('Sending to GAS:', payload);
+
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        action: 'saveNote', 
-                        username: username, 
-                        note: note 
-                    })
+                    body: JSON.stringify(payload)
                 });
 
+                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
@@ -130,6 +136,7 @@
                     document.getElementById('note').value = '';
                 }
             } catch (error) {
+                console.error('Fetch error:', error);
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }

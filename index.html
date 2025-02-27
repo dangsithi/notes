@@ -74,13 +74,13 @@
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v1.1</div>
+        <div class="version">Phiên bản: v1.2</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzo8GBLoKjPa8NL5G71QjaIJIQ2Y_xU62Cqzn0qY0YcAKjwlnIpN1ZXRrWpbeYaAYVy4Q/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMUqVYpfnGH9PiZPk-xx4K7-USQEz1CEjaj82rigkk44eM5db3BuywW8jpcUGFs0I/exec";
         let isRegisterMode = false;
 
         window.onload = function() {
@@ -112,24 +112,30 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
+            const payload = { 
+                action: endpoint, 
+                username: username, 
+                password: hashedPassword 
+            };
+            console.log('Sending to GAS:', payload);
+
             try {
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ 
-                        action: endpoint, 
-                        username: username, 
-                        password: hashedPassword 
-                    })
+                    body: JSON.stringify(payload)
                 });
 
+                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
@@ -141,6 +147,7 @@
                     switchToRegister();
                 }
             } catch (error) {
+                console.error('Fetch error:', error);
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }
