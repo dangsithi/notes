@@ -75,7 +75,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "YOUR_GAS_URL_HERE"; // Thay bằng URL GAS mới từ bước 2
+        const SCRIPT_URL = "YOUR_GAS_URL_HERE"; // Thay bằng URL GAS của bạn
         const username = localStorage.getItem('loggedInUser');
 
         window.onload = function() {
@@ -99,15 +99,16 @@
             message.textContent = 'Đang lưu...';
 
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=saveNote`, {
+                const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json'
                     },
-                    mode: 'cors',
-                    credentials: 'omit',
-                    body: JSON.stringify({ username, note })
+                    body: JSON.stringify({ 
+                        action: 'saveNote', 
+                        username: username, 
+                        note: note 
+                    })
                 });
 
                 if (!response.ok) {
