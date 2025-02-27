@@ -106,6 +106,8 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
+            console.log('Sending request to GAS:', { username, password: hashedPassword });
+
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
                     method: 'POST',
@@ -115,15 +117,19 @@
                     body: JSON.stringify({ username, password: hashedPassword })
                 });
 
+                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
             } catch (error) {
+                console.error('Fetch error:', error);
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }
