@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký & Đăng Nhập - v1.2</title>
+    <title>Đăng Ký & Đăng Nhập - v1.3</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -11,7 +11,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #ff9a9e, #fad0c4); /* Gradient hồng đào */
+            background: linear-gradient(135deg, #2a4365, #718096); /* Gradient xanh dương - xám */
             margin: 0;
         }
         .container {
@@ -28,7 +28,7 @@
             transform: translateY(-3px);
         }
         h2 {
-            color: #444;
+            color: #2a4365; /* Xanh đậm cho tiêu đề */
             margin-bottom: 15px;
             font-weight: 600;
             font-size: 24px;
@@ -44,15 +44,15 @@
             transition: border-color 0.3s ease;
         }
         input:focus {
-            border-color: #ff758c; /* Hồng đậm khi focus */
+            border-color: #2a4365; /* Xanh đậm khi focus */
             outline: none;
-            box-shadow: 0 0 4px rgba(255, 117, 140, 0.4);
+            box-shadow: 0 0 4px rgba(42, 67, 101, 0.4);
         }
         button {
             width: 100%;
             padding: 10px;
             font-size: 14px;
-            background: #ff758c; /* Hồng đậm cho nút chính */
+            background: #2a4365; /* Xanh đậm cho nút chính */
             color: white;
             border: none;
             border-radius: 6px;
@@ -65,21 +65,21 @@
             cursor: not-allowed;
         }
         button:hover:not(:disabled) {
-            background: #ff5e77; /* Hover hồng đậm hơn */
+            background: #1a2e44; /* Hover xanh đậm hơn */
         }
         #switch-btn {
-            background: #fad0c4; /* Hồng nhạt cho nút chuyển đổi */
-            color: #444;
+            background: #718096; /* Xám xanh cho nút chuyển đổi */
+            color: white;
         }
         #switch-btn:hover:not(:disabled) {
-            background: #f7b8a9;
+            background: #5a6b82;
         }
         #logout {
             display: none;
-            background: #ff6b6b; /* Đỏ nhẹ cho đăng xuất */
+            background: #e53e3e; /* Đỏ đậm cho đăng xuất */
         }
         #logout:hover {
-            background: #e55a5a;
+            background: #c53030;
         }
         #message {
             margin-top: 15px;
@@ -102,7 +102,7 @@
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
-        <div class="version">Phiên bản 1.2</div>
+        <div class="version">Phiên bản 1.3</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
