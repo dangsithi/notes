@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.7</title>
+    <title>Ghi Chú - v1.8</title>
+    <!-- Thêm CryptoJS để băm mật khẩu -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -16,9 +18,24 @@
             max-width: 600px;
             margin: 0 auto;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
         h1 {
             font-size: 28px;
-            margin-bottom: 20px;
+            margin: 0;
+        }
+        .change-password {
+            color: #e53e3e;
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .change-password:hover {
+            color: #c53030;
         }
         .note-form {
             background: white;
@@ -51,10 +68,10 @@
         button:hover {
             background: #1a2e44;
         }
-        #logout-btn, #change-password-btn {
+        #logout-btn {
             background: #e53e3e;
         }
-        #logout-btn:hover, #change-password-btn:hover {
+        #logout-btn:hover {
             background: #c53030;
         }
         .notes-list {
@@ -138,11 +155,13 @@
 </head>
 <body>
     <div class="container">
-        <h1>Xin chào, <span id="username"></span>!</h1>
+        <div class="header">
+            <h1>Xin chào, <span id="username"></span>!</h1>
+            <span class="change-password" onclick="changePassword()">Đổi Mật Khẩu</span>
+        </div>
         <div class="note-form">
             <textarea id="note-content" placeholder="Nhập ghi chú mới..."></textarea>
             <button onclick="saveNote()" id="save-btn">Lưu Ghi Chú</button>
-            <button id="change-password-btn" onclick="changePassword()">Đổi Mật Khẩu</button>
             <button id="logout-btn" onclick="logout()">Đăng Xuất</button>
             <div id="status-message"></div>
         </div>
@@ -152,7 +171,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.7</div>
+        <div class="version">Phiên bản 1.8</div>
     </div>
 
     <script>
