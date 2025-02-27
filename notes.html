@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.3</title>
+    <title>Ghi Chú - v1.4</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -83,6 +83,22 @@
             text-align: center;
             padding: 20px;
         }
+        .pagination {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .pagination button {
+            margin: 0 5px;
+            padding: 8px 16px;
+            background: #718096;
+        }
+        .pagination button:hover {
+            background: #5a6b82;
+        }
+        .pagination button:disabled {
+            background: #d3d3d3;
+            cursor: not-allowed;
+        }
         .version {
             font-size: 12px;
             color: #888;
@@ -100,11 +116,20 @@
             <button id="logout-btn" onclick="logout()">Đăng Xuất</button>
         </div>
         <div class="notes-list" id="notes-list"></div>
-        <div class="version">Phiên bản 1.3</div>
+        <div class="pagination">
+            <button onclick="prevPage()" id="prev-btn">Trang trước</button>
+            <span id="page-info"></span>
+            <button onclick="nextPage()" id="next-btn">Trang sau</button>
+        </div>
+        <div class="version">Phiên bản 1.4</div>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
+        const ITEMS_PER_PAGE = 20;
+        let currentPage = 1;
+        let totalNotes = 0;
+
         const username = localStorage.getItem('loggedInUser');
         if (!username) {
             window.location.href = 'index.html';
@@ -143,7 +168,10 @@
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
 
             if (cachedNotes) {
-                displayNotes(JSON.parse(cachedNotes));
+                const notes = JSON.parse(cachedNotes);
+                totalNotes = notes.length;
+                displayNotes(notes);
+                updatePagination();
             }
 
             syncNotes();
@@ -151,13 +179,15 @@
 
         async function syncNotes() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getNotes&username=${username}`, {
+                const response = await fetch(`${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}`, {
                     method: 'GET'
                 });
                 const data = await response.json();
-                if (data.success && data.notes) {
+                if (data.success) {
+                    totalNotes = data.total;
                     localStorage.setItem(`notes_${username}`, JSON.stringify(data.notes));
                     displayNotes(data.notes);
+                    updatePagination();
                 }
             } catch (error) {
                 console.error('Lỗi khi đồng bộ ghi chú:', error);
@@ -177,6 +207,28 @@
                 noteDiv.innerHTML = `${note.content}<span>${note.timestamp}</span>`;
                 notesList.appendChild(noteDiv);
             });
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
+            document.getElementById('page-info').textContent = `Trang ${currentPage} / ${totalPages || 1}`;
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages || totalNotes === 0;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                syncNotes();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                currentPage++;
+                syncNotes();
+            }
         }
 
         function logout() {
