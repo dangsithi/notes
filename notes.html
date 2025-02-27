@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.8</title>
-    <!-- Thêm CryptoJS để băm mật khẩu -->
+    <title>Ghi Chú - v1.9</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -171,7 +170,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.8</div>
+        <div class="version">Phiên bản 1.9</div>
     </div>
 
     <script>
@@ -181,15 +180,24 @@
         let totalNotes = 0;
 
         const username = localStorage.getItem('loggedInUser');
-        if (!username) {
+        const authToken = localStorage.getItem('authToken'); // Token xác thực
+        const csrfToken = CryptoJS.lib.WordArray.random(16).toString(); // CSRF token đơn giản
+        if (!username || !authToken) {
             window.location.href = 'index.html';
         } else {
             document.getElementById('username').textContent = username;
             loadNotes();
         }
 
+        // Hàm lọc nội dung để tránh XSS
+        function sanitizeInput(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML.replace(/<script.*?>.*?<\/script>/gi, '');
+        }
+
         async function saveNote() {
-            const content = document.getElementById('note-content').value.trim();
+            const content = sanitizeInput(document.getElementById('note-content').value.trim());
             const statusMessage = document.getElementById('status-message');
             const saveBtn = document.getElementById('save-btn');
 
@@ -206,7 +214,7 @@
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=saveNote`, {
                     method: 'POST',
-                    body: JSON.stringify({ username, content })
+                    body: JSON.stringify({ username, content, authToken, csrfToken })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -228,7 +236,7 @@
         }
 
         async function editNote(noteId, oldContent, timestamp) {
-            const newContent = prompt('Chỉnh sửa ghi chú:', oldContent);
+            const newContent = sanitizeInput(prompt('Chỉnh sửa ghi chú:', oldContent));
             if (newContent === null || newContent.trim() === '') return;
 
             const statusMessage = document.getElementById('status-message');
@@ -238,7 +246,7 @@
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=editNote`, {
                     method: 'POST',
-                    body: JSON.stringify({ username, noteId, content: newContent.trim(), timestamp })
+                    body: JSON.stringify({ username, noteId, content: newContent.trim(), timestamp, authToken, csrfToken })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -267,7 +275,7 @@
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=deleteNote`, {
                     method: 'POST',
-                    body: JSON.stringify({ username, noteId })
+                    body: JSON.stringify({ username, noteId, authToken, csrfToken })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -298,11 +306,12 @@
             statusMessage.style.color = '#2a4365';
 
             try {
-                const oldHashedPassword = CryptoJS.SHA256(oldPassword).toString();
-                const newHashedPassword = CryptoJS.SHA256(newPassword).toString();
+                const salt = CryptoJS.lib.WordArray.random(16).toString();
+                const oldHashedPassword = CryptoJS.SHA256(oldPassword + salt).toString();
+                const newHashedPassword = CryptoJS.SHA256(newPassword + salt).toString();
                 const response = await fetch(`${SCRIPT_URL}?action=changePassword`, {
                     method: 'POST',
-                    body: JSON.stringify({ username, oldPassword: oldHashedPassword, newPassword: newHashedPassword })
+                    body: JSON.stringify({ username, oldPassword: oldHashedPassword, newPassword: newHashedPassword, authToken, csrfToken, salt })
                 });
                 const data = await response.json();
                 if (data.success) {
@@ -337,7 +346,7 @@
 
         async function syncNotes() {
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}`, {
+                const response = await fetch(`${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${authToken}`, {
                     method: 'GET'
                 });
                 const data = await response.json();
@@ -362,13 +371,28 @@
             notes.forEach(note => {
                 const noteDiv = document.createElement('div');
                 noteDiv.className = 'note-item';
-                noteDiv.innerHTML = `
-                    <div class="content">${note.content}<span>${note.timestamp}</span></div>
-                    <div class="actions">
-                        <button class="edit-btn" onclick="editNote('${note.id}', '${note.content}', '${note.timestamp}')">Sửa</button>
-                        <button class="delete-btn" onclick="deleteNote('${note.id}')">Xóa</button>
-                    </div>
-                `;
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'content';
+                contentDiv.textContent = note.content;
+                const span = document.createElement('span');
+                span.textContent = note.timestamp;
+                contentDiv.appendChild(span);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'actions';
+                const editBtn = document.createElement('button');
+                editBtn.className = 'edit-btn';
+                editBtn.textContent = 'Sửa';
+                editBtn.onclick = () => editNote(note.id, note.content, note.timestamp);
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = 'Xóa';
+                deleteBtn.onclick = () => deleteNote(note.id);
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+
+                noteDiv.appendChild(contentDiv);
+                noteDiv.appendChild(actionsDiv);
                 notesList.appendChild(noteDiv);
             });
         }
@@ -397,6 +421,7 @@
 
         function logout() {
             localStorage.removeItem('loggedInUser');
+            localStorage.removeItem('authToken');
             localStorage.removeItem(`notes_${username}`);
             window.location.href = 'index.html';
         }
