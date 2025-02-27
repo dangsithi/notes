@@ -3,22 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký & Đăng Nhập - v1.4</title>
+    <title>Đăng Ký & Đăng Nhập - v1.5</title>
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #2a4365, #718096);
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2); /* Gradient Apple-style */
             margin: 0;
         }
         .container {
-            background: rgba(255, 255, 255, 0.97);
+            background: rgba(255, 255, 255, 0.95);
             padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 320px;
             text-align: center;
@@ -28,58 +28,58 @@
             transform: translateY(-3px);
         }
         h2 {
-            color: #2a4365;
-            margin-bottom: 15px;
+            color: #1d1d1f; /* Đen đậm Apple */
+            margin-bottom: 20px;
             font-weight: 600;
             font-size: 24px;
         }
         input {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
+            padding: 12px;
+            margin: 12px 0;
             font-size: 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
             box-sizing: border-box;
             transition: border-color 0.3s ease;
         }
         input:focus {
-            border-color: #2a4365;
+            border-color: #007aff; /* Xanh Apple khi focus */
             outline: none;
-            box-shadow: 0 0 4px rgba(42, 67, 101, 0.4);
+            box-shadow: 0 0 4px rgba(0, 122, 255, 0.4);
         }
         button {
             width: 100%;
-            padding: 10px;
-            font-size: 14px;
-            background: #2a4365;
+            padding: 12px;
+            font-size: 16px;
+            background: #007aff; /* Xanh Apple */
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 10px;
             cursor: pointer;
-            margin: 8px 0;
+            margin: 10px 0;
             transition: background 0.3s ease;
         }
         button:disabled {
-            background: #d3d3d3;
+            background: #d2d2d7;
             cursor: not-allowed;
         }
         button:hover:not(:disabled) {
-            background: #1a2e44;
+            background: #0066cc; /* Hover xanh đậm hơn */
         }
         #switch-btn {
-            background: #718096;
-            color: white;
+            background: #e0e0e0; /* Xám nhạt cho nút chuyển đổi */
+            color: #1d1d1f;
         }
         #switch-btn:hover:not(:disabled) {
-            background: #5a6b82;
+            background: #c7c7cc;
         }
         #logout {
             display: none;
-            background: #e53e3e;
+            background: #ff3b30; /* Đỏ Apple */
         }
         #logout:hover {
-            background: #c53030;
+            background: #cc2e26;
         }
         #message {
             margin-top: 15px;
@@ -102,7 +102,7 @@
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
-        <div class="version">Phiên bản 1.4</div>
+        <div class="version">Phiên bản 1.5</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
@@ -113,7 +113,7 @@
 
         window.onload = function() {
             if (localStorage.getItem('loggedInUser')) {
-                window.location.href = 'notes.html'; // Chuyển hướng nếu đã đăng nhập
+                window.location.href = 'notes.html';
             }
         };
 
@@ -160,7 +160,7 @@
 
                 if (data.success && !isRegisterMode) {
                     localStorage.setItem('loggedInUser', username);
-                    window.location.href = 'notes.html'; // Chuyển hướng khi đăng nhập thành công
+                    window.location.href = 'notes.html';
                 } else if (data.success && isRegisterMode) {
                     switchToRegister();
                 }
@@ -173,7 +173,6 @@
         }
 
         function showLoggedInState(username) {
-            // Không còn cần hàm này vì chuyển hướng trực tiếp
             window.location.href = 'notes.html';
         }
 
