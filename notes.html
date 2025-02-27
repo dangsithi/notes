@@ -77,11 +77,11 @@
         <button onclick="saveNote()">Lưu Ghi Chú</button>
         <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v1.2</div>
+        <div class="version">Phiên bản: v2.3</div>
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMUqVYpfnGH9PiZPk-xx4K7-USQEz1CEjaj82rigkk44eM5db3BuywW8jpcUGFs0I/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
         const username = localStorage.getItem('loggedInUser');
 
         window.onload = function() {
@@ -104,30 +104,20 @@
 
             message.textContent = 'Đang lưu...';
 
-            const payload = { 
-                action: 'saveNote', 
-                username: username, 
-                note: note 
-            };
-            console.log('Sending to GAS:', payload);
-
             try {
-                const response = await fetch(SCRIPT_URL, {
+                const response = await fetch(`${SCRIPT_URL}?action=saveNote`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ username, note })
                 });
 
-                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
@@ -136,7 +126,6 @@
                     document.getElementById('note').value = '';
                 }
             } catch (error) {
-                console.error('Fetch error:', error);
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }

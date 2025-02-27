@@ -74,13 +74,13 @@
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v2.2</div>
+        <div class="version">Phiên bản: v2.3</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWROrInqXXqDQgEK8qKGQx6MZZ6LbHO5phGma2ERJVT-CCvsgKdLeBL1C_D4jBGWqCdQ/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
         let isRegisterMode = false;
 
         function switchToRegister() {
@@ -106,34 +106,29 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
-            const url = `${SCRIPT_URL}?action=${endpoint}`;
-            const payload = { username, password: hashedPassword };
-            console.log('Sending to:', url);
-            console.log('Payload:', JSON.stringify(payload));
-
             try {
-                const response = await fetch(url, {
+                const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ username, password: hashedPassword })
                 });
 
-                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
+
+                if (data.success && !isRegisterMode) {
+                    localStorage.setItem('loggedInUser', username);
+                    window.location.href = 'notes.html';
+                }
             } catch (error) {
-                console.error('Fetch error:', error);
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }
