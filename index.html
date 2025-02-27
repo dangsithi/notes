@@ -13,56 +13,44 @@
             justify-content: center;
             min-height: 100vh;
             background-color: #f0f0f0;
-            margin: 0;
         }
         .container {
             background-color: white;
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 320px;
-            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
         }
         input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             margin: 10px 0;
             font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
             box-sizing: border-box;
         }
         button {
-            padding: 12px 24px;
+            padding: 10px 20px;
             font-size: 16px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            border-radius: 5px;
             cursor: pointer;
             margin: 5px;
-            background: linear-gradient(45deg, #4CAF50, #66BB6A);
-            transition: transform 0.2s, box-shadow 0.2s;
         }
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        #switch-btn {
-            background: linear-gradient(45deg, #2196F3, #42A5F5);
+            background-color: #45a049;
         }
         #message {
-            margin-top: 15px;
+            margin-top: 20px;
             font-size: 18px;
             color: #333;
         }
-        h2 {
-            color: #333;
-            margin-bottom: 20px;
+        #logout {
+            display: none;
+            background-color: #f44336;
         }
-        .version {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
+        #logout:hover {
+            background-color: #d32f2f;
         }
     </style>
 </head>
@@ -73,15 +61,21 @@
         <input type="password" id="password" placeholder="Mật khẩu">
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
+        <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v3.0</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec"; // Thay bằng URL GAS từ bước 2
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec"; // Thay bằng URL từ bước 2
         let isRegisterMode = false;
+
+        window.onload = function() {
+            if (localStorage.getItem('loggedInUser')) {
+                showLoggedInState(localStorage.getItem('loggedInUser'));
+            }
+        };
 
         function switchToRegister() {
             isRegisterMode = !isRegisterMode;
@@ -98,7 +92,6 @@
 
             if (!username || !password) {
                 message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
-                message.style.color = 'red';
                 return;
             }
 
@@ -109,16 +102,8 @@
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ username, password: hashedPassword })
                 });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-
                 const data = await response.json();
 
                 message.textContent = data.message;
@@ -126,12 +111,30 @@
 
                 if (data.success && !isRegisterMode) {
                     localStorage.setItem('loggedInUser', username);
-                    window.location.href = 'notes.html';
+                    showLoggedInState(username);
+                } else if (data.success && isRegisterMode) {
+                    switchToRegister();
                 }
             } catch (error) {
-                message.textContent = 'Lỗi kết nối: ' + error.message;
+                message.textContent = 'Lỗi: ' + error.message;
                 message.style.color = 'red';
             }
+        }
+
+        function showLoggedInState(username) {
+            const message = document.getElementById('message');
+            message.textContent = `Chào mừng ${username}!`;
+            message.style.color = 'green';
+            document.getElementById('username').style.display = 'none';
+            document.getElementById('password').style.display = 'none';
+            document.getElementById('login-btn').style.display = 'none';
+            document.getElementById('switch-btn').style.display = 'none';
+            document.getElementById('logout').style.display = 'inline-block';
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            location.reload();
         }
     </script>
 </body>
