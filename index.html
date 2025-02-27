@@ -74,13 +74,13 @@
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v2.0.1</div>
+        <div class="version">Phiên bản: v2.1</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzxsSvOygfwB3X8m7U2_07rzLWtR5L4PVVfV4mFRInmDVP_RS3k_A4gdjiT7uGYIzb47A/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyFZPXT3gEsn9LmNPtQ0oYXVXHEInNkTa1h1NeCCGEV9QzRw0rASk8QvEoVbwuR0jlZdA/exec";
         let isRegisterMode = false;
 
         function switchToRegister() {
@@ -106,7 +106,7 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
-            console.log('Sending request to GAS:', { username, password: hashedPassword });
+            console.log('Sending request to GAS:', { endpoint, username, password: hashedPassword });
 
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
