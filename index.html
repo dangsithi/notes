@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký & Đăng Nhập - v1.1</title>
+    <title>Đăng Ký & Đăng Nhập - v1.2</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -11,83 +11,85 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #6e8efb, #a777e3);
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4); /* Gradient hồng đào */
             margin: 0;
         }
         .container {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            background: rgba(255, 255, 255, 0.97);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
             width: 100%;
-            max-width: 360px;
+            max-width: 320px; /* Phù hợp iPhone 14 Pro Max */
             text-align: center;
             transition: transform 0.3s ease;
         }
         .container:hover {
-            transform: translateY(-5px);
+            transform: translateY(-3px);
         }
         h2 {
-            color: #333;
-            margin-bottom: 20px;
+            color: #444;
+            margin-bottom: 15px;
             font-weight: 600;
+            font-size: 24px;
         }
         input {
             width: 100%;
-            padding: 12px;
-            margin: 12px 0;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
             box-sizing: border-box;
             transition: border-color 0.3s ease;
         }
         input:focus {
-            border-color: #6e8efb;
+            border-color: #ff758c; /* Hồng đậm khi focus */
             outline: none;
-            box-shadow: 0 0 5px rgba(110, 142, 251, 0.5);
+            box-shadow: 0 0 4px rgba(255, 117, 140, 0.4);
         }
         button {
             width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            background: #6e8efb;
+            padding: 10px;
+            font-size: 14px;
+            background: #ff758c; /* Hồng đậm cho nút chính */
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             cursor: pointer;
-            margin: 10px 0;
+            margin: 8px 0;
             transition: background 0.3s ease;
         }
         button:disabled {
-            background: #cccccc;
+            background: #d3d3d3;
             cursor: not-allowed;
         }
         button:hover:not(:disabled) {
-            background: #5a75e0;
+            background: #ff5e77; /* Hover hồng đậm hơn */
         }
         #switch-btn {
-            background: #a777e3;
+            background: #fad0c4; /* Hồng nhạt cho nút chuyển đổi */
+            color: #444;
         }
         #switch-btn:hover:not(:disabled) {
-            background: #8f5ed1;
+            background: #f7b8a9;
         }
         #logout {
             display: none;
-            background: #ff6b6b;
+            background: #ff6b6b; /* Đỏ nhẹ cho đăng xuất */
         }
         #logout:hover {
             background: #e55a5a;
         }
         #message {
-            margin-top: 20px;
-            font-size: 16px;
+            margin-top: 15px;
+            font-size: 14px;
             color: #333;
         }
         .version {
-            font-size: 12px;
-            color: #777;
-            margin-top: 15px;
+            font-size: 11px;
+            color: #888;
+            margin-top: 12px;
         }
     </style>
 </head>
@@ -100,13 +102,13 @@
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
-        <div class="version">Phiên bản 1.1</div>
+        <div class="version">Phiên bản 1.2</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec"; // Thay bằng URL từ Google Apps Script
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
         let isRegisterMode = false;
 
         window.onload = function() {
