@@ -13,44 +13,66 @@
             justify-content: center;
             min-height: 100vh;
             background-color: #f0f0f0;
+            margin: 0;
         }
-        .container {
+        .container, .dashboard {
             background-color: white;
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            text-align: center;
+        }
+        .dashboard {
+            display: none;
+            animation: fadeIn 0.5s ease-in;
         }
         input {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 10px 0;
             font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
             box-sizing: border-box;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             font-size: 16px;
-            background-color: #4CAF50;
             color: white;
             border: none;
+            border-radius: 5px;
             cursor: pointer;
             margin: 5px;
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
         button:hover {
-            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-        #message {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
+        #login-btn {
+            background: linear-gradient(45deg, #4CAF50, #66BB6A);
+        }
+        #switch-btn {
+            background: linear-gradient(45deg, #2196F3, #42A5F5);
         }
         #logout {
             display: none;
-            background-color: #f44336;
+            background: linear-gradient(45deg, #f44336, #ef5350);
         }
-        #logout:hover {
-            background-color: #d32f2f;
+        #message {
+            margin-top: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -61,19 +83,23 @@
         <input type="password" id="password" placeholder="Mật khẩu">
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
-        <button onclick="logout()" id="logout">Đăng Xuất</button>
         <div id="message"></div>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <h2 id="welcome-message"></h2>
+        <button onclick="logout()" id="logout">Đăng Xuất</button>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCYvFec7yoMLLSSPgZTfiJfXz3TTdfbo2j4vb6nP-SSAzH1oys4jV1lG-4dBoXudspLg/exec"; // Thay bằng URL từ bước 2
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCYvFec7yoMLLSSPgZTfiJfXz3TTdfbo2j4vb6nP-SSAzH1oys4jV1lG-4dBoXudspLg/exec"; // Thay bằng URL GAS của bạn
         let isRegisterMode = false;
 
         window.onload = function() {
             if (localStorage.getItem('loggedInUser')) {
-                showLoggedInState(localStorage.getItem('loggedInUser'));
+                showDashboard(localStorage.getItem('loggedInUser'));
             }
         };
 
@@ -92,6 +118,7 @@
 
             if (!username || !password) {
                 message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
+                message.style.color = 'red';
                 return;
             }
 
@@ -106,35 +133,39 @@
                 });
                 const data = await response.json();
 
-                message.textContent = data.message;
+                message.textContent = data.message; // Hiển thị thông báo chi tiết từ GAS
                 message.style.color = data.success ? 'green' : 'red';
 
                 if (data.success && !isRegisterMode) {
                     localStorage.setItem('loggedInUser', username);
-                    showLoggedInState(username);
+                    showDashboard(username);
                 } else if (data.success && isRegisterMode) {
                     switchToRegister();
                 }
             } catch (error) {
-                message.textContent = 'Lỗi: ' + error.message;
+                message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }
         }
 
-        function showLoggedInState(username) {
-            const message = document.getElementById('message');
-            message.textContent = `Chào mừng ${username}!`;
-            message.style.color = 'green';
-            document.getElementById('username').style.display = 'none';
-            document.getElementById('password').style.display = 'none';
-            document.getElementById('login-btn').style.display = 'none';
-            document.getElementById('switch-btn').style.display = 'none';
-            document.getElementById('logout').style.display = 'inline-block';
+        function showDashboard(username) {
+            document.getElementById('auth-container').style.display = 'none';
+            const dashboard = document.getElementById('dashboard');
+            dashboard.style.display = 'block';
+            document.getElementById('welcome-message').textContent = `Chào mừng ${username} đến Dashboard!`;
         }
 
         function logout() {
             localStorage.removeItem('loggedInUser');
-            location.reload();
+            document.getElementById('dashboard').style.display = 'none';
+            document.getElementById('auth-container').style.display = 'block';
+            document.getElementById('message').textContent = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            isRegisterMode = false;
+            document.getElementById('title').textContent = 'Đăng Nhập';
+            document.getElementById('login-btn').textContent = 'Đăng Nhập';
+            document.getElementById('switch-btn').textContent = 'Đăng Ký';
         }
     </script>
 </body>
