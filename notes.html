@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.1</title>
+    <title>Ghi Chú - v1.2</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -83,6 +83,12 @@
             text-align: center;
             margin-top: 20px;
         }
+        .loading {
+            font-size: 14px;
+            color: #718096;
+            text-align: center;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -94,7 +100,7 @@
             <button id="logout-btn" onclick="logout()">Đăng Xuất</button>
         </div>
         <div class="notes-list" id="notes-list"></div>
-        <div class="version">Phiên bản 1.1</div>
+        <div class="version">Phiên bản 1.2</div>
     </div>
 
     <script>
@@ -122,7 +128,7 @@
                 const data = await response.json();
                 if (data.success) {
                     document.getElementById('note-content').value = '';
-                    loadNotes();
+                    syncNotes(); // Đồng bộ sau khi lưu
                 } else {
                     alert('Lỗi khi lưu ghi chú: ' + data.message);
                 }
@@ -131,29 +137,51 @@
             }
         }
 
-        async function loadNotes() {
+        function loadNotes() {
+            const cachedNotes = localStorage.getItem(`notes_${username}`);
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '<div class="loading">Đang tải...</div>';
+
+            if (cachedNotes) {
+                displayNotes(JSON.parse(cachedNotes));
+            }
+
+            syncNotes(); // Đồng bộ từ server trong nền
+        }
+
+        async function syncNotes() {
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=getNotes&username=${username}`, {
                     method: 'GET'
                 });
                 const data = await response.json();
-                const notesList = document.getElementById('notes-list');
-                notesList.innerHTML = '';
                 if (data.success && data.notes) {
-                    data.notes.forEach(note => {
-                        const noteDiv = document.createElement('div');
-                        noteDiv.className = 'note-item';
-                        noteDiv.innerHTML = `${note.content}<span>${note.timestamp}</span>`;
-                        notesList.appendChild(noteDiv);
-                    });
+                    localStorage.setItem(`notes_${username}`, JSON.stringify(data.notes));
+                    displayNotes(data.notes);
                 }
             } catch (error) {
-                console.error('Lỗi khi tải ghi chú:', error);
+                console.error('Lỗi khi đồng bộ ghi chú:', error);
             }
+        }
+
+        function displayNotes(notes) {
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '';
+            if (notes.length === 0) {
+                notesList.innerHTML = '<div class="loading">Chưa có ghi chú nào</div>';
+                return;
+            }
+            notes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'note-item';
+                noteDiv.innerHTML = `${note.content}<span>${note.timestamp}</span>`;
+                notesList.appendChild(noteDiv);
+            });
         }
 
         function logout() {
             localStorage.removeItem('loggedInUser');
+            localStorage.removeItem(`notes_${username}`);
             window.location.href = 'index.html';
         }
     </script>
