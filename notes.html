@@ -75,12 +75,12 @@
     </div>
 
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCYvFec7yoMLLSSPgZTfiJfXz3TTdfbo2j4vb6nP-SSAzH1oys4jV1lG-4dBoXudspLg/exec"; // Thay bằng URL GAS từ bước 2
+        const SCRIPT_URL = "YOUR_GAS_URL_HERE"; // Thay bằng URL GAS mới từ bước 2
         const username = localStorage.getItem('loggedInUser');
 
         window.onload = function() {
             if (!username) {
-                window.location.href = 'index.html'; // Quay lại nếu chưa đăng nhập
+                window.location.href = 'index.html';
             } else {
                 document.getElementById('welcome-message').textContent = `Chào ${username}!`;
             }
@@ -102,10 +102,12 @@
                 const response = await fetch(`${SCRIPT_URL}?action=saveNote`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    mode: 'cors', // Đảm bảo CORS
-                    body: JSON.stringify({ username, note }) // Dữ liệu rõ ràng
+                    mode: 'cors',
+                    credentials: 'omit',
+                    body: JSON.stringify({ username, note })
                 });
 
                 if (!response.ok) {
@@ -118,7 +120,7 @@
                 message.style.color = data.success ? 'green' : 'red';
 
                 if (data.success) {
-                    document.getElementById('note').value = ''; // Xóa textarea
+                    document.getElementById('note').value = '';
                 }
             } catch (error) {
                 message.textContent = 'Lỗi kết nối: ' + error.message;
