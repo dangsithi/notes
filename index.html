@@ -1,78 +1,188 @@
-<!-- Chỉ cập nhật phần <script> trong index.html -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-<script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
-    let isRegisterMode = false;
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký & Đăng Nhập - v1.6</title>
+    <style>
+        body {
+            font-family: 'SF Pro Display', 'Segoe UI', Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .container:hover {
+            transform: translateY(-3px);
+        }
+        h2 {
+            color: #1d1d1f;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 24px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            font-size: 14px;
+            border: 1px solid #d2d2d7;
+            border-radius: 10px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+        input:focus {
+            border-color: #007aff;
+            outline: none;
+            box-shadow: 0 0 4px rgba(0, 122, 255, 0.4);
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            background: #007aff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px 0;
+            transition: background 0.3s ease;
+        }
+        button:disabled {
+            background: #d2d2d7;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
+            background: #0066cc;
+        }
+        #switch-btn {
+            background: #e0e0e0;
+            color: #1d1d1f;
+        }
+        #switch-btn:hover:not(:disabled) {
+            background: #c7c7cc;
+        }
+        #logout {
+            display: none;
+            background: #ff3b30;
+        }
+        #logout:hover {
+            background: #cc2e26;
+        }
+        #message {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #333;
+        }
+        .version {
+            font-size: 11px;
+            color: #888;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="auth-container">
+        <h2 id="title">Đăng Nhập</h2>
+        <input type="text" id="username" placeholder="Tên người dùng" autocomplete="off">
+        <input type="password" id="password" placeholder="Mật khẩu">
+        <button onclick="login()" id="login-btn">Đăng Nhập</button>
+        <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
+        <button onclick="logout()" id="logout">Đăng Xuất</button>
+        <div id="message"></div>
+        <div class="version">Phiên bản 1.6</div>
+    </div>
 
-    window.onload = function() {
-        if (localStorage.getItem('loggedInUser') && localStorage.getItem('authToken')) {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
+        let isRegisterMode = false;
+
+        window.onload = function() {
+            if (localStorage.getItem('loggedInUser') && localStorage.getItem('authToken')) {
+                window.location.href = 'notes.html';
+            }
+        };
+
+        function switchToRegister() {
+            isRegisterMode = !isRegisterMode;
+            document.getElementById('title').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
+            document.getElementById('login-btn').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
+            document.getElementById('switch-btn').textContent = isRegisterMode ? 'Đăng Nhập' : 'Đăng Ký';
+            document.getElementById('message').textContent = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const message = document.getElementById('message');
+            const loginBtn = document.getElementById('login-btn');
+
+            if (!username || !password) {
+                message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
+                return;
+            }
+
+            if (!/^[a-zA-Z0-9]+$/.test(username)) {
+                message.textContent = 'Tên người dùng chỉ được chứa chữ cái và số!';
+                return;
+            }
+
+            const hashedPassword = CryptoJS.SHA256(password).toString();
+            const endpoint = isRegisterMode ? 'register' : 'login';
+            message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
+            loginBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, password: hashedPassword })
+                });
+                const data = await response.json();
+
+                message.textContent = data.message;
+                message.style.color = data.success ? 'green' : 'red';
+
+                if (data.success) {
+                    localStorage.setItem('loggedInUser', username);
+                    localStorage.setItem('authToken', data.authToken); // Lưu token
+                    if (!isRegisterMode) {
+                        window.location.href = 'notes.html';
+                    } else {
+                        switchToRegister();
+                    }
+                }
+            } catch (error) {
+                message.textContent = 'Lỗi kết nối: ' + error.message;
+                message.style.color = 'red';
+            } finally {
+                loginBtn.disabled = false;
+            }
+        }
+
+        function showLoggedInState(username) {
             window.location.href = 'notes.html';
         }
-    };
 
-    function switchToRegister() {
-        isRegisterMode = !isRegisterMode;
-        document.getElementById('title').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
-        document.getElementById('login-btn').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
-        document.getElementById('switch-btn').textContent = isRegisterMode ? 'Đăng Nhập' : 'Đăng Ký';
-        document.getElementById('message').textContent = '';
-        document.getElementById('username').value = '';
-        document.getElementById('password').value = '';
-    }
-
-    async function login() {
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-        const message = document.getElementById('message');
-        const loginBtn = document.getElementById('login-btn');
-
-        if (!username || !password) {
-            message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
-            return;
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            localStorage.removeItem('authToken');
+            location.reload();
         }
-
-        if (!/^[a-zA-Z0-9]+$/.test(username)) {
-            message.textContent = 'Tên người dùng chỉ được chứa chữ cái và số!';
-            return;
-        }
-
-        const hashedPassword = CryptoJS.SHA256(password).toString();
-        const endpoint = isRegisterMode ? 'register' : 'login';
-        message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
-        loginBtn.disabled = true;
-
-        try {
-            const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
-                method: 'POST',
-                body: JSON.stringify({ username, password: hashedPassword })
-            });
-            const data = await response.json();
-
-            message.textContent = data.message;
-            message.style.color = data.success ? 'green' : 'red';
-
-            if (data.success && !isRegisterMode) {
-                localStorage.setItem('loggedInUser', username);
-                localStorage.setItem('authToken', data.authToken); // Lưu token
-                window.location.href = 'notes.html';
-            } else if (data.success && isRegisterMode) {
-                switchToRegister();
-            }
-        } catch (error) {
-            message.textContent = 'Lỗi kết nối: ' + error.message;
-            message.style.color = 'red';
-        } finally {
-            loginBtn.disabled = false;
-        }
-    }
-
-    function showLoggedInState(username) {
-        window.location.href = 'notes.html';
-    }
-
-    function logout() {
-        localStorage.removeItem('loggedInUser');
-        localStorage.removeItem('authToken');
-        location.reload();
-    }
-</script>
+    </script>
+</body>
+</html>
