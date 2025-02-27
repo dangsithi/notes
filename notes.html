@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.10</title>
+    <title>Ghi Chú - v1.11</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -87,17 +87,19 @@
         button:hover {
             background: #355f7d;
         }
-        #logout-btn {
-            background: #e63946;
+        #search-btn {
+            background: #2a9d8f;
         }
-        #logout-btn:hover {
-            background: #d00000;
+        #search-btn:hover {
+            background: #21867a;
         }
         .search-bar {
             margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
         }
         #search-input {
-            width: 100%;
+            flex-grow: 1;
             padding: 12px;
             font-size: 14px;
             border: 1px solid #e0e0e0;
@@ -209,7 +211,8 @@
             <div id="status-message"></div>
         </div>
         <div class="search-bar">
-            <input type="text" id="search-input" placeholder="Tìm kiếm ghi chú..." oninput="searchNotes()">
+            <input type="text" id="search-input" placeholder="Tìm kiếm ghi chú...">
+            <button id="search-btn" onclick="searchNotes()">Tìm kiếm</button>
         </div>
         <div class="notes-list" id="notes-list"></div>
         <div class="pagination">
@@ -217,7 +220,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.10</div>
+        <div class="version">Phiên bản 1.11</div>
     </div>
 
     <script>
@@ -225,7 +228,7 @@
         const ITEMS_PER_PAGE = 20;
         let currentPage = 1;
         let totalNotes = 0;
-        let allNotes = []; // Lưu toàn bộ ghi chú để tìm kiếm
+        let allNotes = [];
 
         const username = localStorage.getItem('loggedInUser');
         const authToken = localStorage.getItem('authToken');
@@ -381,7 +384,7 @@
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
 
             if (cachedNotes) {
-                allNotes = JSON.parse(cachedNotes);
+                allNotes = JSON.parse(cachedNotes).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 totalNotes = allNotes.length;
                 displayNotes(allNotes);
                 updatePagination();
@@ -398,7 +401,7 @@
                 const data = await response.json();
                 if (data.success) {
                     totalNotes = data.total;
-                    allNotes = data.notes; // Cập nhật allNotes để tìm kiếm
+                    allNotes = data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sắp xếp mới nhất lên trên
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
                     displayNotes(allNotes);
                     updatePagination();
@@ -415,7 +418,7 @@
                 notesList.innerHTML = '<div class="loading">Chưa có ghi chú nào</div>';
                 return;
             }
-            notes.forEach(note => {
+            notes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(note => {
                 const noteDiv = document.createElement('div');
                 noteDiv.className = 'note-item';
                 const contentDiv = document.createElement('div');
@@ -463,7 +466,8 @@
         function prevPage() {
             if (currentPage > 1) {
                 currentPage--;
-                syncNotes();
+                displayNotes(allNotes); // Dùng allNotes để giữ kết quả tìm kiếm
+                updatePagination();
             }
         }
 
@@ -471,7 +475,8 @@
             const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
             if (currentPage < totalPages) {
                 currentPage++;
-                syncNotes();
+                displayNotes(allNotes); // Dùng allNotes để giữ kết quả tìm kiếm
+                updatePagination();
             }
         }
 
