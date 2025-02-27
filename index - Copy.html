@@ -68,7 +68,7 @@
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec"; // Thay bằng URL từ bước 2
         let isRegisterMode = false;
 
         window.onload = function() {
@@ -92,7 +92,6 @@
 
             if (!username || !password) {
                 message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
-                message.style.color = 'red';
                 return;
             }
 
@@ -100,26 +99,12 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
-            console.log('Sending to:', `${SCRIPT_URL}?action=${endpoint}`);
-            console.log('Payload:', JSON.stringify({ username, password: hashedPassword }));
-
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
                     body: JSON.stringify({ username, password: hashedPassword })
                 });
-
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
-                }
-
                 const data = await response.json();
-                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
@@ -131,8 +116,7 @@
                     switchToRegister();
                 }
             } catch (error) {
-                console.error('Fetch error:', error);
-                message.textContent = 'Lỗi kết nối: ' + error.message;
+                message.textContent = 'Lỗi: ' + error.message;
                 message.style.color = 'red';
             }
         }
