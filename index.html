@@ -74,7 +74,7 @@
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v2.1</div>
+        <div class="version">Phiên bản: v2.2</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
@@ -106,15 +106,19 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
-            console.log('Sending request to GAS:', { endpoint, username, password: hashedPassword });
+            const url = `${SCRIPT_URL}?action=${endpoint}`;
+            const payload = { username, password: hashedPassword };
+            console.log('Sending to:', url);
+            console.log('Payload:', JSON.stringify(payload));
 
             try {
-                const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
+                const response = await fetch(url, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
                     },
-                    body: JSON.stringify({ username, password: hashedPassword })
+                    body: JSON.stringify(payload)
                 });
 
                 console.log('Response status:', response.status);
