@@ -180,8 +180,8 @@
         let totalNotes = 0;
 
         const username = localStorage.getItem('loggedInUser');
-        const authToken = localStorage.getItem('authToken'); // Token xác thực
-        const csrfToken = CryptoJS.lib.WordArray.random(16).toString(); // CSRF token đơn giản
+        const authToken = localStorage.getItem('authToken');
+        const csrfToken = CryptoJS.lib.WordArray.random(16).toString();
         if (!username || !authToken) {
             window.location.href = 'index.html';
         } else {
@@ -189,7 +189,6 @@
             loadNotes();
         }
 
-        // Hàm lọc nội dung để tránh XSS
         function sanitizeInput(input) {
             const div = document.createElement('div');
             div.textContent = input;
@@ -306,12 +305,11 @@
             statusMessage.style.color = '#2a4365';
 
             try {
-                const salt = CryptoJS.lib.WordArray.random(16).toString();
-                const oldHashedPassword = CryptoJS.SHA256(oldPassword + salt).toString();
-                const newHashedPassword = CryptoJS.SHA256(newPassword + salt).toString();
+                const oldHashedPassword = CryptoJS.SHA256(oldPassword).toString(); // Băm giống đăng nhập
+                const newHashedPassword = CryptoJS.SHA256(newPassword).toString();
                 const response = await fetch(`${SCRIPT_URL}?action=changePassword`, {
                     method: 'POST',
-                    body: JSON.stringify({ username, oldPassword: oldHashedPassword, newPassword: newHashedPassword, authToken, csrfToken, salt })
+                    body: JSON.stringify({ username, oldPassword: oldHashedPassword, newPassword: newHashedPassword, authToken, csrfToken })
                 });
                 const data = await response.json();
                 if (data.success) {
