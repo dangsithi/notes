@@ -15,17 +15,13 @@
             background-color: #f0f0f0;
             margin: 0;
         }
-        .container, .dashboard {
+        .container {
             background-color: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             width: 320px;
             text-align: center;
-        }
-        .dashboard {
-            display: none;
-            animation: fadeIn 0.5s ease-in;
         }
         input {
             width: 100%;
@@ -51,15 +47,8 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         }
-        #login-btn {
-            background: linear-gradient(45deg, #4CAF50, #66BB6A);
-        }
         #switch-btn {
             background: linear-gradient(45deg, #2196F3, #42A5F5);
-        }
-        #logout {
-            display: none;
-            background: linear-gradient(45deg, #f44336, #ef5350);
         }
         #message {
             margin-top: 15px;
@@ -69,10 +58,6 @@
         h2 {
             color: #333;
             margin-bottom: 20px;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
@@ -86,11 +71,6 @@
         <div id="message"></div>
     </div>
 
-    <div class="dashboard" id="dashboard">
-        <h2 id="welcome-message"></h2>
-        <button onclick="logout()" id="logout">Đăng Xuất</button>
-    </div>
-
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
@@ -99,7 +79,7 @@
 
         window.onload = function() {
             if (localStorage.getItem('loggedInUser')) {
-                showDashboard(localStorage.getItem('loggedInUser'));
+                window.location.href = 'notes.html'; // Chuyển hướng nếu đã đăng nhập
             }
         };
 
@@ -133,12 +113,12 @@
                 });
                 const data = await response.json();
 
-                message.textContent = data.message; // Hiển thị thông báo chi tiết từ GAS
+                message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
 
                 if (data.success && !isRegisterMode) {
                     localStorage.setItem('loggedInUser', username);
-                    showDashboard(username);
+                    window.location.href = 'notes.html'; // Chuyển hướng đến trang ghi chú
                 } else if (data.success && isRegisterMode) {
                     switchToRegister();
                 }
@@ -146,26 +126,6 @@
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }
-        }
-
-        function showDashboard(username) {
-            document.getElementById('auth-container').style.display = 'none';
-            const dashboard = document.getElementById('dashboard');
-            dashboard.style.display = 'block';
-            document.getElementById('welcome-message').textContent = `Chào mừng ${username} đến Dashboard!`;
-        }
-
-        function logout() {
-            localStorage.removeItem('loggedInUser');
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('auth-container').style.display = 'block';
-            document.getElementById('message').textContent = '';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            isRegisterMode = false;
-            document.getElementById('title').textContent = 'Đăng Nhập';
-            document.getElementById('login-btn').textContent = 'Đăng Nhập';
-            document.getElementById('switch-btn').textContent = 'Đăng Ký';
         }
     </script>
 </body>
