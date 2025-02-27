@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.6</title>
+    <title>Ghi Chú - v1.7</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -51,10 +51,10 @@
         button:hover {
             background: #1a2e44;
         }
-        #logout-btn {
+        #logout-btn, #change-password-btn {
             background: #e53e3e;
         }
-        #logout-btn:hover {
+        #logout-btn:hover, #change-password-btn:hover {
             background: #c53030;
         }
         .notes-list {
@@ -142,6 +142,7 @@
         <div class="note-form">
             <textarea id="note-content" placeholder="Nhập ghi chú mới..."></textarea>
             <button onclick="saveNote()" id="save-btn">Lưu Ghi Chú</button>
+            <button id="change-password-btn" onclick="changePassword()">Đổi Mật Khẩu</button>
             <button id="logout-btn" onclick="logout()">Đăng Xuất</button>
             <div id="status-message"></div>
         </div>
@@ -151,7 +152,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.6</div>
+        <div class="version">Phiên bản 1.7</div>
     </div>
 
     <script>
@@ -203,13 +204,17 @@
                 statusMessage.style.color = 'red';
             } finally {
                 saveBtn.disabled = false;
-                setTimeout(() => { statusMessage.textContent = ''; }, 3000); // Xóa thông báo sau 3 giây
+                setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }
         }
 
         async function editNote(noteId, oldContent, timestamp) {
             const newContent = prompt('Chỉnh sửa ghi chú:', oldContent);
             if (newContent === null || newContent.trim() === '') return;
+
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = 'Đang sửa...';
+            statusMessage.style.color = '#2a4365';
 
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=editNote`, {
@@ -218,17 +223,27 @@
                 });
                 const data = await response.json();
                 if (data.success) {
+                    statusMessage.textContent = 'Ghi chú đã được sửa!';
+                    statusMessage.style.color = 'green';
                     syncNotes();
                 } else {
-                    alert('Lỗi khi chỉnh sửa ghi chú: ' + data.message);
+                    statusMessage.textContent = 'Lỗi khi chỉnh sửa: ' + data.message;
+                    statusMessage.style.color = 'red';
                 }
             } catch (error) {
-                alert('Lỗi kết nối: ' + error.message);
+                statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
+                statusMessage.style.color = 'red';
+            } finally {
+                setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }
         }
 
         async function deleteNote(noteId) {
             if (!confirm('Bạn có chắc muốn xóa ghi chú này?')) return;
+
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = 'Đang xóa...';
+            statusMessage.style.color = '#2a4365';
 
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=deleteNote`, {
@@ -237,12 +252,52 @@
                 });
                 const data = await response.json();
                 if (data.success) {
+                    statusMessage.textContent = 'Ghi chú đã được xóa!';
+                    statusMessage.style.color = 'green';
                     syncNotes();
                 } else {
-                    alert('Lỗi khi xóa ghi chú: ' + data.message);
+                    statusMessage.textContent = 'Lỗi khi xóa: ' + data.message;
+                    statusMessage.style.color = 'red';
                 }
             } catch (error) {
-                alert('Lỗi kết nối: ' + error.message);
+                statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
+                statusMessage.style.color = 'red';
+            } finally {
+                setTimeout(() => { statusMessage.textContent = ''; }, 3000);
+            }
+        }
+
+        async function changePassword() {
+            const oldPassword = prompt('Nhập mật khẩu cũ:');
+            if (!oldPassword) return;
+
+            const newPassword = prompt('Nhập mật khẩu mới:');
+            if (!newPassword || newPassword.trim() === '') return;
+
+            const statusMessage = document.getElementById('status-message');
+            statusMessage.textContent = 'Đang đổi mật khẩu...';
+            statusMessage.style.color = '#2a4365';
+
+            try {
+                const oldHashedPassword = CryptoJS.SHA256(oldPassword).toString();
+                const newHashedPassword = CryptoJS.SHA256(newPassword).toString();
+                const response = await fetch(`${SCRIPT_URL}?action=changePassword`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, oldPassword: oldHashedPassword, newPassword: newHashedPassword })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    statusMessage.textContent = 'Mật khẩu đã được đổi!';
+                    statusMessage.style.color = 'green';
+                } else {
+                    statusMessage.textContent = 'Lỗi khi đổi mật khẩu: ' + data.message;
+                    statusMessage.style.color = 'red';
+                }
+            } catch (error) {
+                statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
+                statusMessage.style.color = 'red';
+            } finally {
+                setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }
         }
 
