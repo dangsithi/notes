@@ -134,11 +134,13 @@
 
             if (!username || !password) {
                 message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
+                message.style.color = 'red';
                 return;
             }
 
             if (!/^[a-zA-Z0-9]+$/.test(username)) {
                 message.textContent = 'Tên người dùng chỉ được chứa chữ cái và số!';
+                message.style.color = 'red';
                 return;
             }
 
@@ -159,7 +161,7 @@
 
                 if (data.success) {
                     localStorage.setItem('loggedInUser', username);
-                    localStorage.setItem('authToken', data.authToken); // Lưu token
+                    localStorage.setItem('authToken', data.authToken); // Lưu token từ server
                     if (!isRegisterMode) {
                         window.location.href = 'notes.html';
                     } else {
