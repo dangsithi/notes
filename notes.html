@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.5</title>
+    <title>Ghi Chú - v1.6</title>
     <style>
         body {
             font-family: 'Segoe UI', Arial, sans-serif;
@@ -129,6 +129,11 @@
             text-align: center;
             margin-top: 20px;
         }
+        #status-message {
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -136,5 +141,191 @@
         <h1>Xin chào, <span id="username"></span>!</h1>
         <div class="note-form">
             <textarea id="note-content" placeholder="Nhập ghi chú mới..."></textarea>
-            <button onclick="saveNote()">Lưu Ghi Chú</button>
-            <button id="logout-btn" onclick="logout()">Đăng Xuất
+            <button onclick="saveNote()" id="save-btn">Lưu Ghi Chú</button>
+            <button id="logout-btn" onclick="logout()">Đăng Xuất</button>
+            <div id="status-message"></div>
+        </div>
+        <div class="notes-list" id="notes-list"></div>
+        <div class="pagination">
+            <button onclick="prevPage()" id="prev-btn">Trang trước</button>
+            <span id="page-info"></span>
+            <button onclick="nextPage()" id="next-btn">Trang sau</button>
+        </div>
+        <div class="version">Phiên bản 1.6</div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
+        const ITEMS_PER_PAGE = 20;
+        let currentPage = 1;
+        let totalNotes = 0;
+
+        const username = localStorage.getItem('loggedInUser');
+        if (!username) {
+            window.location.href = 'index.html';
+        } else {
+            document.getElementById('username').textContent = username;
+            loadNotes();
+        }
+
+        async function saveNote() {
+            const content = document.getElementById('note-content').value.trim();
+            const statusMessage = document.getElementById('status-message');
+            const saveBtn = document.getElementById('save-btn');
+
+            if (!content) {
+                statusMessage.textContent = 'Vui lòng nhập nội dung ghi chú!';
+                statusMessage.style.color = 'red';
+                return;
+            }
+
+            statusMessage.textContent = 'Đang lưu...';
+            statusMessage.style.color = '#2a4365';
+            saveBtn.disabled = true;
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=saveNote`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, content })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('note-content').value = '';
+                    statusMessage.textContent = 'Ghi chú đã được lưu!';
+                    statusMessage.style.color = 'green';
+                    syncNotes();
+                } else {
+                    statusMessage.textContent = 'Lỗi khi lưu ghi chú: ' + data.message;
+                    statusMessage.style.color = 'red';
+                }
+            } catch (error) {
+                statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
+                statusMessage.style.color = 'red';
+            } finally {
+                saveBtn.disabled = false;
+                setTimeout(() => { statusMessage.textContent = ''; }, 3000); // Xóa thông báo sau 3 giây
+            }
+        }
+
+        async function editNote(noteId, oldContent, timestamp) {
+            const newContent = prompt('Chỉnh sửa ghi chú:', oldContent);
+            if (newContent === null || newContent.trim() === '') return;
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=editNote`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, noteId, content: newContent.trim(), timestamp })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    syncNotes();
+                } else {
+                    alert('Lỗi khi chỉnh sửa ghi chú: ' + data.message);
+                }
+            } catch (error) {
+                alert('Lỗi kết nối: ' + error.message);
+            }
+        }
+
+        async function deleteNote(noteId) {
+            if (!confirm('Bạn có chắc muốn xóa ghi chú này?')) return;
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=deleteNote`, {
+                    method: 'POST',
+                    body: JSON.stringify({ username, noteId })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    syncNotes();
+                } else {
+                    alert('Lỗi khi xóa ghi chú: ' + data.message);
+                }
+            } catch (error) {
+                alert('Lỗi kết nối: ' + error.message);
+            }
+        }
+
+        function loadNotes() {
+            const cachedNotes = localStorage.getItem(`notes_${username}`);
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '<div class="loading">Đang tải...</div>';
+
+            if (cachedNotes) {
+                const notes = JSON.parse(cachedNotes);
+                totalNotes = notes.length;
+                displayNotes(notes);
+                updatePagination();
+            }
+
+            syncNotes();
+        }
+
+        async function syncNotes() {
+            try {
+                const response = await fetch(`${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}`, {
+                    method: 'GET'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    totalNotes = data.total;
+                    localStorage.setItem(`notes_${username}`, JSON.stringify(data.notes));
+                    displayNotes(data.notes);
+                    updatePagination();
+                }
+            } catch (error) {
+                console.error('Lỗi khi đồng bộ ghi chú:', error);
+            }
+        }
+
+        function displayNotes(notes) {
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '';
+            if (notes.length === 0) {
+                notesList.innerHTML = '<div class="loading">Chưa có ghi chú nào</div>';
+                return;
+            }
+            notes.forEach(note => {
+                const noteDiv = document.createElement('div');
+                noteDiv.className = 'note-item';
+                noteDiv.innerHTML = `
+                    <div class="content">${note.content}<span>${note.timestamp}</span></div>
+                    <div class="actions">
+                        <button class="edit-btn" onclick="editNote('${note.id}', '${note.content}', '${note.timestamp}')">Sửa</button>
+                        <button class="delete-btn" onclick="deleteNote('${note.id}')">Xóa</button>
+                    </div>
+                `;
+                notesList.appendChild(noteDiv);
+            });
+        }
+
+        function updatePagination() {
+            const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
+            document.getElementById('page-info').textContent = `Trang ${currentPage} / ${totalPages || 1}`;
+            document.getElementById('prev-btn').disabled = currentPage === 1;
+            document.getElementById('next-btn').disabled = currentPage === totalPages || totalNotes === 0;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                syncNotes();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
+            if (currentPage < totalPages) {
+                currentPage++;
+                syncNotes();
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('loggedInUser');
+            localStorage.removeItem(`notes_${username}`);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
