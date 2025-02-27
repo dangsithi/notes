@@ -59,11 +59,6 @@
             color: #333;
             margin-bottom: 20px;
         }
-        .version {
-            margin-top: 20px;
-            font-size: 14px;
-            color: #666;
-        }
     </style>
 </head>
 <body>
@@ -74,20 +69,13 @@
         <button onclick="login()" id="login-btn">Đăng Nhập</button>
         <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
         <div id="message"></div>
-        <div class="version">Phiên bản: v1.2</div>
     </div>
 
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwMUqVYpfnGH9PiZPk-xx4K7-USQEz1CEjaj82rigkk44eM5db3BuywW8jpcUGFs0I/exec";
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwCYvFec7yoMLLSSPgZTfiJfXz3TTdfbo2j4vb6nP-SSAzH1oys4jV1lG-4dBoXudspLg/exec";
         let isRegisterMode = false;
-
-        window.onload = function() {
-            if (localStorage.getItem('loggedInUser')) {
-                window.location.href = 'notes.html';
-            }
-        };
 
         function switchToRegister() {
             isRegisterMode = !isRegisterMode;
@@ -112,42 +100,24 @@
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
 
-            const payload = { 
-                action: endpoint, 
-                username: username, 
-                password: hashedPassword 
-            };
-            console.log('Sending to GAS:', payload);
-
             try {
-                const response = await fetch(SCRIPT_URL, {
+                const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({ username, password: hashedPassword })
                 });
 
-                console.log('Response status:', response.status);
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log('Response data:', data);
 
                 message.textContent = data.message;
                 message.style.color = data.success ? 'green' : 'red';
-
-                if (data.success && !isRegisterMode) {
-                    localStorage.setItem('loggedInUser', username);
-                    window.location.href = 'notes.html';
-                } else if (data.success && isRegisterMode) {
-                    switchToRegister();
-                }
             } catch (error) {
-                console.error('Fetch error:', error);
                 message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
             }
