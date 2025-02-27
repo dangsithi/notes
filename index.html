@@ -37,7 +37,11 @@
             cursor: pointer;
             margin: 5px;
         }
-        button:hover {
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        button:hover:not(:disabled) {
             background-color: #45a049;
         }
         #message {
@@ -68,7 +72,7 @@
     <!-- CryptoJS để băm mật khẩu -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script>
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec"; // Thay bằng URL từ bước 2
+        const SCRIPT_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE"; // Thay bằng URL từ Google Apps Script
         let isRegisterMode = false;
 
         window.onload = function() {
@@ -83,21 +87,30 @@
             document.getElementById('login-btn').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
             document.getElementById('switch-btn').textContent = isRegisterMode ? 'Đăng Nhập' : 'Đăng Ký';
             document.getElementById('message').textContent = '';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
         }
 
         async function login() {
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value.trim();
             const message = document.getElementById('message');
+            const loginBtn = document.getElementById('login-btn');
 
             if (!username || !password) {
                 message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
                 return;
             }
 
+            if (!/^[a-zA-Z0-9]+$/.test(username)) {
+                message.textContent = 'Tên người dùng chỉ được chứa chữ cái và số!';
+                return;
+            }
+
             const hashedPassword = CryptoJS.SHA256(password).toString();
             const endpoint = isRegisterMode ? 'register' : 'login';
             message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
+            loginBtn.disabled = true;
 
             try {
                 const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
@@ -116,8 +129,10 @@
                     switchToRegister();
                 }
             } catch (error) {
-                message.textContent = 'Lỗi: ' + error.message;
+                message.textContent = 'Lỗi kết nối: ' + error.message;
                 message.style.color = 'red';
+            } finally {
+                loginBtn.disabled = false;
             }
         }
 
