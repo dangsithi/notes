@@ -1,146 +1,44 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Ký & Đăng Nhập</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            width: 300px;
-        }
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        #message {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #333;
-        }
-        #logout {
-            display: none;
-            background-color: #f44336;
-        }
-        #logout:hover {
-            background-color: #d32f2f;
-        }
-    </style>
-</head>
-<body>
-    <div class="container" id="auth-container">
-        <h2 id="title">Đăng Nhập</h2>
-        <input type="text" id="username" placeholder="Tên người dùng" autocomplete="off">
-        <input type="password" id="password" placeholder="Mật khẩu">
-        <button onclick="login()" id="login-btn">Đăng Nhập</button>
-        <button onclick="switchToRegister()" id="switch-btn">Đăng Ký</button>
-        <button onclick="logout()" id="logout">Đăng Xuất</button>
-        <div id="message"></div>
-    </div>
+const SHEET_NAME = 'Sheet1';
 
-    <!-- CryptoJS để băm mật khẩu -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script>
-        const SCRIPT_URL = https://script.google.com/macros/s/AKfycbwumlpVa4MqORYpm4-wnazmuOv_9bkhnYScs-SLw_CAetYDzUWb5huDCRU_frMtjXrvGA/exec; // Thay bằng URL của Google Apps Script
-        let isRegisterMode = false;
+function doPost(e) {
+  const data = JSON.parse(e.postData.contents);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const action = e.parameter.action;
 
-        // Kiểm tra phiên đăng nhập
-        window.onload = function() {
-            if (localStorage.getItem('loggedInUser')) {
-                showLoggedInState(localStorage.getItem('loggedInUser'));
-            }
-        };
+  if (action === 'register') {
+    return handleRegister(data, sheet);
+  } else if (action === 'login') {
+    return handleLogin(data, sheet);
+  }
 
-        // Chuyển chế độ
-        function switchToRegister() {
-            isRegisterMode = !isRegisterMode;
-            document.getElementById('title').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
-            document.getElementById('login-btn').textContent = isRegisterMode ? 'Đăng Ký' : 'Đăng Nhập';
-            document.getElementById('switch-btn').textContent = isRegisterMode ? 'Đăng Nhập' : 'Đăng Ký';
-            document.getElementById('message').textContent = '';
-        }
+  return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Hành động không hợp lệ!' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-        // Xử lý đăng nhập/đăng ký
-        async function login() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const message = document.getElementById('message');
+function handleRegister(data, sheet) {
+  const { username, password } = data;
+  const users = sheet.getRange('A2:B').getValues().filter(row => row[0]);
+  
+  if (users.some(row => row[0] === username)) {
+    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Tên người dùng đã tồn tại!' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 
-            if (!username || !password) {
-                message.textContent = 'Vui lòng nhập đầy đủ thông tin!';
-                return;
-            }
+  sheet.appendRow([username, password]);
+  return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Đăng ký thành công!' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
 
-            const hashedPassword = CryptoJS.SHA256(password).toString();
-            const endpoint = isRegisterMode ? 'register' : 'login';
-            message.textContent = isRegisterMode ? 'Đang đăng ký...' : 'Đang kiểm tra...';
+function handleLogin(data, sheet) {
+  const { username, password } = data;
+  const users = sheet.getRange('A2:B').getValues().filter(row => row[0]);
+  const user = users.find(row => row[0] === username && row[1] === password);
 
-            try {
-                const response = await fetch(`${SCRIPT_URL}?action=${endpoint}`, {
-                    method: 'POST',
-                    body: JSON.stringify({ username, password: hashedPassword })
-                });
-                const data = await response.json();
+  if (user) {
+    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Đăng nhập thành công!' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 
-                message.textContent = data.message;
-                message.style.color = data.success ? 'green' : 'red';
-
-                if (data.success && !isRegisterMode) {
-                    localStorage.setItem('loggedInUser', username);
-                    showLoggedInState(username);
-                } else if (data.success && isRegisterMode) {
-                    switchToRegister();
-                }
-            } catch (error) {
-                message.textContent = 'Lỗi: ' + error.message;
-                message.style.color = 'red';
-            }
-        }
-
-        // Hiển thị trạng thái đăng nhập
-        function showLoggedInState(username) {
-            const message = document.getElementById('message');
-            message.textContent = `Chào mừng ${username}!`;
-            message.style.color = 'green';
-            document.getElementById('username').style.display = 'none';
-            document.getElementById('password').style.display = 'none';
-            document.getElementById('login-btn').style.display = 'none';
-            document.getElementById('switch-btn').style.display = 'none';
-            document.getElementById('logout').style.display = 'inline-block';
-        }
-
-        // Đăng xuất
-        function logout() {
-            localStorage.removeItem('loggedInUser');
-            location.reload();
-        }
-    </script>
-</body>
-</html>
+  return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Tên người dùng hoặc mật khẩu sai!' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
