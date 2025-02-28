@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.31</title>
+    <title>Ghi Chú - v1.32</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -34,7 +34,7 @@
         }
         .navbar {
             background: rgba(255, 255, 255, 0.98);
-            padding: 20px 25px;
+            padding: 15px 25px;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
             display: flex;
@@ -48,28 +48,29 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
         }
         .navbar h1 {
-            font-size: 22px;
+            font-size: 18px; /* Thu nhỏ chữ để nằm cùng hàng */
             font-weight: 600;
             margin: 0;
             color: #2d3748;
+            white-space: nowrap;
         }
         body.dark-mode .navbar h1 {
             color: #e2e8f0;
         }
         @media (max-width: 600px) {
             .navbar h1 {
-                font-size: 20px;
+                font-size: 16px;
             }
         }
         .navbar-actions {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: nowrap;
         }
         @media (max-width: 600px) {
             .navbar-actions {
-                gap: 10px;
+                gap: 8px;
             }
         }
         .navbar-actions span {
@@ -77,7 +78,7 @@
             text-decoration: none;
             font-weight: 500;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px; /* Thu nhỏ chữ để không xuống hàng */
             position: relative;
             transition: color 0.3s ease;
             white-space: nowrap;
@@ -101,10 +102,10 @@
         .dark-mode-toggle {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .dark-mode-toggle label {
-            font-size: 14px;
+            font-size: 13px;
             color: #2d3748;
             font-weight: 500;
             white-space: nowrap;
@@ -115,10 +116,10 @@
         }
         .dark-mode-toggle input[type="checkbox"] {
             appearance: none;
-            width: 45px;
-            height: 22px;
+            width: 40px;
+            height: 20px;
             background: #e2e8f0;
-            border-radius: 22px;
+            border-radius: 20px;
             position: relative;
             cursor: pointer;
             outline: none;
@@ -130,8 +131,8 @@
         .dark-mode-toggle input[type="checkbox"]::before {
             content: '';
             position: absolute;
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
             background: #fff;
             border-radius: 50%;
             top: 2px;
@@ -140,7 +141,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
         }
         .dark-mode-toggle input[type="checkbox"]:checked::before {
-            transform: translateX(23px);
+            transform: translateX(20px);
         }
         .note-form {
             background: #fff;
@@ -403,7 +404,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.31</div>
+        <div class="version">Phiên bản 1.32</div>
     </div>
 
     <script>
