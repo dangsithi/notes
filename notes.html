@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.11</title>
+    <title>Ghi Chú - v1.12</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -13,6 +13,11 @@
             background: linear-gradient(135deg, #e6f0fa, #f0f7ff);
             color: #2a4365;
             min-height: 100vh;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+        body.dark-mode {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #e0e0e0;
         }
         .container {
             max-width: 700px;
@@ -29,13 +34,21 @@
             align-items: center;
             margin-bottom: 20px;
         }
+        body.dark-mode .navbar {
+            background: rgba(34, 40, 49, 0.9);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
         .navbar h1 {
             font-size: 24px;
             margin: 0;
             color: #1d3557;
         }
+        body.dark-mode .navbar h1 {
+            color: #e0e0e0;
+        }
         .navbar-actions {
             display: flex;
+            align-items: center;
             gap: 15px;
         }
         .navbar-actions span {
@@ -48,12 +61,56 @@
         .navbar-actions span:hover {
             color: #d00000;
         }
+        .dark-mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .dark-mode-toggle label {
+            font-size: 14px;
+            color: #1d3557;
+        }
+        body.dark-mode .dark-mode-toggle label {
+            color: #e0e0e0;
+        }
+        .dark-mode-toggle input[type="checkbox"] {
+            appearance: none;
+            width: 40px;
+            height: 20px;
+            background: #d3d3d3;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            transition: background 0.3s ease;
+        }
+        .dark-mode-toggle input[type="checkbox"]:checked {
+            background: #457b9d;
+        }
+        .dark-mode-toggle input[type="checkbox"]::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+        }
+        .dark-mode-toggle input[type="checkbox"]:checked::before {
+            transform: translateX(20px);
+        }
         .note-form {
             background: white;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             margin-bottom: 20px;
+        }
+        body.dark-mode .note-form {
+            background: #222831;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
         textarea {
             width: 100%;
@@ -65,6 +122,13 @@
             resize: vertical;
             min-height: 120px;
             transition: border-color 0.3s ease;
+            background: white;
+            color: #2a4365;
+        }
+        body.dark-mode textarea {
+            background: #393e46;
+            color: #e0e0e0;
+            border-color: #555;
         }
         textarea:focus {
             border-color: #457b9d;
@@ -107,6 +171,12 @@
             box-sizing: border-box;
             background: white;
             transition: border-color 0.3s ease;
+            color: #2a4365;
+        }
+        body.dark-mode #search-input {
+            background: #393e46;
+            color: #e0e0e0;
+            border-color: #555;
         }
         #search-input:focus {
             border-color: #457b9d;
@@ -118,6 +188,10 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
+        body.dark-mode .notes-list {
+            background: #222831;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
         .note-item {
             padding: 15px;
             border-bottom: 1px solid #e9ecef;
@@ -126,8 +200,14 @@
             align-items: center;
             transition: background 0.2s ease;
         }
+        body.dark-mode .note-item {
+            border-bottom: 1px solid #393e46;
+        }
         .note-item:hover {
             background: #f8f9fa;
+        }
+        body.dark-mode .note-item:hover {
+            background: #2a2f38;
         }
         .note-item:last-child {
             border-bottom: none;
@@ -141,6 +221,9 @@
             color: #6c757d;
             display: block;
             margin-top: 5px;
+        }
+        body.dark-mode .note-item span {
+            color: #adb5bd;
         }
         .note-item .actions button {
             padding: 6px 12px;
@@ -165,6 +248,9 @@
             text-align: center;
             padding: 20px;
         }
+        body.dark-mode .loading {
+            color: #adb5bd;
+        }
         .pagination {
             text-align: center;
             margin-top: 20px;
@@ -187,10 +273,16 @@
             text-align: center;
             margin-top: 20px;
         }
+        body.dark-mode .version {
+            color: #adb5bd;
+        }
         #status-message {
             margin-top: 10px;
             font-size: 14px;
             text-align: center;
+        }
+        body.dark-mode #status-message {
+            color: #e0e0e0;
         }
     </style>
 </head>
@@ -201,6 +293,10 @@
             <div class="navbar-actions">
                 <span class="change-password" onclick="changePassword()">Đổi Mật Khẩu</span>
                 <span class="change-password" onclick="logout()">Đăng Xuất</span>
+                <div class="dark-mode-toggle">
+                    <label for="dark-mode-switch">Dark Mode</label>
+                    <input type="checkbox" id="dark-mode-switch" onchange="toggleDarkMode()">
+                </div>
             </div>
         </div>
         <div class="note-form">
@@ -220,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.11</div>
+        <div class="version">Phiên bản 1.12</div>
     </div>
 
     <script>
@@ -229,6 +325,7 @@
         let currentPage = 1;
         let totalNotes = 0;
         let allNotes = [];
+        let filteredNotes = [];
 
         const username = localStorage.getItem('loggedInUser');
         const authToken = localStorage.getItem('authToken');
@@ -238,6 +335,12 @@
         } else {
             document.getElementById('username').textContent = username;
             loadNotes();
+        }
+
+        // Kiểm tra và áp dụng dark mode từ localStorage
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('dark-mode-switch').checked = true;
         }
 
         function sanitizeInput(input) {
@@ -385,8 +488,9 @@
 
             if (cachedNotes) {
                 allNotes = JSON.parse(cachedNotes).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                filteredNotes = [...allNotes];
                 totalNotes = allNotes.length;
-                displayNotes(allNotes);
+                displayNotes(filteredNotes);
                 updatePagination();
             }
 
@@ -401,9 +505,10 @@
                 const data = await response.json();
                 if (data.success) {
                     totalNotes = data.total;
-                    allNotes = data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)); // Sắp xếp mới nhất lên trên
+                    allNotes = data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    filteredNotes = [...allNotes];
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
-                    displayNotes(allNotes);
+                    displayNotes(filteredNotes);
                     updatePagination();
                 }
             } catch (error) {
@@ -418,7 +523,9 @@
                 notesList.innerHTML = '<div class="loading">Chưa có ghi chú nào</div>';
                 return;
             }
-            notes.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE).forEach(note => {
+            const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+            const endIndex = startIndex + ITEMS_PER_PAGE;
+            notes.slice(startIndex, endIndex).forEach(note => {
                 const noteDiv = document.createElement('div');
                 noteDiv.className = 'note-item';
                 const contentDiv = document.createElement('div');
@@ -448,8 +555,8 @@
         }
 
         function searchNotes() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filteredNotes = allNotes.filter(note => note.content.toLowerCase().includes(searchTerm));
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            filteredNotes = allNotes.filter(note => note.content.toLowerCase().includes(searchTerm));
             totalNotes = filteredNotes.length;
             currentPage = 1; // Reset về trang 1 khi tìm kiếm
             displayNotes(filteredNotes);
@@ -466,8 +573,7 @@
         function prevPage() {
             if (currentPage > 1) {
                 currentPage--;
-                displayNotes(allNotes); // Dùng allNotes để giữ kết quả tìm kiếm
-                updatePagination();
+                syncNotes();
             }
         }
 
@@ -475,9 +581,14 @@
             const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
             if (currentPage < totalPages) {
                 currentPage++;
-                displayNotes(allNotes); // Dùng allNotes để giữ kết quả tìm kiếm
-                updatePagination();
+                syncNotes();
             }
+        }
+
+        function toggleDarkMode() {
+            const isDarkMode = document.getElementById('dark-mode-switch').checked;
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            localStorage.setItem('darkMode', isDarkMode);
         }
 
         function logout() {
