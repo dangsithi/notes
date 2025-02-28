@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.14</title>
+    <title>Ghi Chú - v1.15</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.14</div>
+        <div class="version">Phiên bản 1.15</div>
     </div>
 
     <script>
@@ -327,7 +327,8 @@
         let allNotes = [];
         let filteredNotes = [];
         let isSearching = false;
-        let loadingStatus = document.getElementById('status-message');
+        let searchTerm = '';
+        const statusMessage = document.getElementById('status-message');
 
         const username = localStorage.getItem('loggedInUser');
         const authToken = localStorage.getItem('authToken');
@@ -352,7 +353,6 @@
 
         async function saveNote() {
             const content = sanitizeInput(document.getElementById('note-content').value.trim());
-            const statusMessage = document.getElementById('status-message');
             const saveBtn = document.getElementById('save-btn');
 
             if (!content) {
@@ -393,7 +393,6 @@
             const newContent = sanitizeInput(prompt('Chỉnh sửa ghi chú:', oldContent));
             if (newContent === null || newContent.trim() === '') return;
 
-            const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = 'Đang sửa...';
             statusMessage.style.color = '#2a4365';
 
@@ -422,7 +421,6 @@
         async function deleteNote(noteId) {
             if (!confirm('Bạn có chắc muốn xóa ghi chú này?')) return;
 
-            const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = 'Đang xóa...';
             statusMessage.style.color = '#2a4365';
 
@@ -455,7 +453,6 @@
             const newPassword = prompt('Nhập mật khẩu mới:');
             if (!newPassword || newPassword.trim() === '') return;
 
-            const statusMessage = document.getElementById('status-message');
             statusMessage.textContent = 'Đang đổi mật khẩu...';
             statusMessage.style.color = '#2a4365';
 
@@ -485,18 +482,22 @@
         async function loadNotes() {
             const notesList = document.getElementById('notes-list');
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
-            loadingStatus.textContent = 'Đang tải ghi chú...';
-            loadingStatus.style.color = '#2a4365';
+            statusMessage.textContent = 'Đang tải ghi chú...';
+            statusMessage.style.color = '#2a4365';
             await syncNotes();
-            setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
+            setTimeout(() => { statusMessage.textContent = ''; }, 2000);
         }
 
         async function syncNotes() {
+            const notesList = document.getElementById('notes-list');
+            notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             try {
-                const searchTerm = isSearching ? document.getElementById('search-input').value.toLowerCase().trim() : '';
-                const url = `${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${authToken}${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''}`;
+                const searchQuery = isSearching ? document.getElementById('search-input').value.toLowerCase().trim() : '';
+                const url = `${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${authToken}${searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''}`;
+                console.log('Fetching URL:', url); // Debug URL
                 const response = await fetch(url, { method: 'GET' });
                 const data = await response.json();
+                console.log('Server response:', data); // Debug dữ liệu trả về
                 if (data.success) {
                     totalNotes = data.total;
                     allNotes = data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -504,12 +505,18 @@
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
                     displayNotes(filteredNotes);
                     updatePagination();
+                } else {
+                    statusMessage.textContent = 'Lỗi khi tải ghi chú: ' + data.message;
+                    statusMessage.style.color = 'red';
+                    notesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú nào</div>';
                 }
             } catch (error) {
+                statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
+                statusMessage.style.color = 'red';
+                notesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú nào</div>';
                 console.error('Lỗi khi đồng bộ ghi chú:', error);
-                loadingStatus.textContent = 'Lỗi khi tải ghi chú!';
-                loadingStatus.style.color = 'red';
-                setTimeout(() => { loadingStatus.textContent = ''; }, 3000);
+            } finally {
+                setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }
         }
 
@@ -552,10 +559,9 @@
         function searchNotes() {
             isSearching = true;
             currentPage = 1;
-            loadingStatus.textContent = 'Đang tìm kiếm...';
-            loadingStatus.style.color = '#2a4365';
+            statusMessage.textContent = 'Đang tìm kiếm...';
+            statusMessage.style.color = '#2a4365';
             syncNotes();
-            setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
         }
 
         function updatePagination() {
@@ -568,10 +574,9 @@
         function prevPage() {
             if (currentPage > 1) {
                 currentPage--;
-                loadingStatus.textContent = 'Đang tải...';
-                loadingStatus.style.color = '#2a4365';
+                statusMessage.textContent = 'Đang tải...';
+                statusMessage.style.color = '#2a4365';
                 syncNotes();
-                setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
             }
         }
 
@@ -579,10 +584,9 @@
             const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
             if (currentPage < totalPages) {
                 currentPage++;
-                loadingStatus.textContent = 'Đang tải...';
-                loadingStatus.style.color = '#2a4365';
+                statusMessage.textContent = 'Đang tải...';
+                statusMessage.style.color = '#2a4365';
                 syncNotes();
-                setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
             }
         }
 
