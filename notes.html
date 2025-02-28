@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.16</title>
+    <title>Ghi Chú - v1.17</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.16</div>
+        <div class="version">Phiên bản 1.17</div>
     </div>
 
     <script>
@@ -327,7 +327,6 @@
         let allNotes = [];
         let filteredNotes = [];
         let isSearching = false;
-        let searchTerm = '';
         const statusMessage = document.getElementById('status-message');
 
         const username = localStorage.getItem('loggedInUser');
@@ -493,11 +492,21 @@
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             try {
                 const searchQuery = isSearching ? document.getElementById('search-input').value.toLowerCase().trim() : '';
-                const url = `${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${authToken}${searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''}`;
+                const params = new URLSearchParams({
+                    action: 'getNotes',
+                    username: username,
+                    page: currentPage,
+                    limit: ITEMS_PER_PAGE,
+                    authToken: authToken
+                });
+                if (searchQuery) {
+                    params.append('search', searchQuery);
+                }
+                const url = `${SCRIPT_URL}?${params.toString()}`;
                 console.log('Fetching URL:', url); // Debug URL
                 const response = await fetch(url, {
                     method: 'GET',
-                    redirect: 'follow' // Thêm để xử lý redirect nếu cần
+                    redirect: 'follow'
                 });
                 if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
