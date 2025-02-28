@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.17</title>
+    <title>Ghi Chú - v1.18</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.17</div>
+        <div class="version">Phiên bản 1.18</div>
     </div>
 
     <script>
@@ -491,7 +491,7 @@
             const notesList = document.getElementById('notes-list');
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             try {
-                const searchQuery = isSearching ? document.getElementById('search-input').value.toLowerCase().trim() : '';
+                const searchQuery = isSearching ? document.getElementById('search-input').value.trim() : '';
                 const params = new URLSearchParams({
                     action: 'getNotes',
                     username: username,
@@ -506,10 +506,14 @@
                 console.log('Fetching URL:', url); // Debug URL
                 const response = await fetch(url, {
                     method: 'GET',
-                    redirect: 'follow'
+                    redirect: 'follow',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
                 });
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! Status: ${response.status}, Response: ${errorText}`);
                 }
                 const data = await response.json();
                 console.log('Server response:', data); // Debug dữ liệu trả về
