@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.24</title>
+    <title>Ghi Chú - v1.25</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -23,7 +23,13 @@
         .container {
             max-width: 800px;
             margin: 30px auto;
-            padding: 0 20px;
+            padding: 0 15px; /* Giảm padding để sát lề trên mobile */
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 20px auto;
+                padding: 0 10px;
+            }
         }
         .navbar {
             background: rgba(255, 255, 255, 0.95);
@@ -49,10 +55,20 @@
         body.dark-mode .navbar h1 {
             color: #ecf0f1;
         }
+        @media (max-width: 600px) {
+            .navbar h1 {
+                font-size: 24px;
+            }
+        }
         .navbar-actions {
             display: flex;
             align-items: center;
             gap: 20px;
+        }
+        @media (max-width: 600px) {
+            .navbar-actions {
+                gap: 15px;
+            }
         }
         .navbar-actions span {
             color: #e74c3c;
@@ -209,7 +225,7 @@
         }
         .notes-list {
             background: #fff;
-            padding: 25px;
+            padding: 25px 10px 25px 15px; /* Giảm padding-left để sát lề trái */
             border-radius: 15px;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             transition: background 0.5s ease, box-shadow 0.5s ease;
@@ -219,7 +235,7 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
         .note-item {
-            padding: 20px;
+            padding: 20px 10px; /* Giảm padding để sát lề hơn */
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
@@ -240,8 +256,8 @@
         }
         .note-item .content {
             flex-grow: 1;
-            margin-left: 5px; /* Đẩy sát bên trái thêm một chút */
-            margin-right: 30px; /* Tăng khoảng cách với nút để giảm xuống hàng */
+            margin-left: 0; /* Đẩy sát lề trái hoàn toàn */
+            margin-right: 30px; /* Giữ khoảng cách với nút để giảm xuống hàng */
         }
         .note-item span {
             font-size: 13px;
@@ -355,7 +371,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.24</div>
+        <div class="version">Phiên bản 1.25</div>
     </div>
 
     <script>
