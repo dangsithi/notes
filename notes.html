@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.27</title>
+    <title>Ghi Chú - v1.28</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -47,7 +47,7 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
         .navbar h1 {
-            font-size: 22px; /* Thu nhỏ chữ tiêu đề */
+            font-size: 22px;
             font-weight: 600;
             margin: 0;
             color: #34495e;
@@ -226,53 +226,6 @@
             outline: none;
             box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
         }
-        .admin-notes {
-            background: #f1c40f;
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: background 0.5s ease;
-        }
-        body.dark-mode .admin-notes {
-            background: #e67e22;
-        }
-        .admin-notes h2 {
-            font-size: 20px;
-            font-weight: 600;
-            margin: 0 0 15px 0;
-            color: #2c3e50;
-        }
-        body.dark-mode .admin-notes h2 {
-            color: #ecf0f1;
-        }
-        .admin-note-item {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        body.dark-mode .admin-note-item {
-            border-bottom: 1px solid #5d6d7e;
-        }
-        .admin-note-item:last-child {
-            border-bottom: none;
-        }
-        .admin-note-item .content {
-            flex-grow: 1;
-            margin-right: 20px;
-        }
-        .admin-note-item span {
-            font-size: 13px;
-            color: #7f8c8d;
-            display: block;
-            margin-top: 5px;
-            font-weight: 400;
-        }
-        body.dark-mode .admin-note-item span {
-            color: #b0bec5;
-        }
         .notes-list {
             background: #fff;
             padding: 25px 10px 25px 15px;
@@ -415,27 +368,21 @@
             <input type="text" id="search-input" placeholder="Tìm kiếm ghi chú...">
             <button id="search-btn" onclick="searchNotes()">Tìm kiếm</button>
         </div>
-        <div class="admin-notes" id="admin-notes">
-            <h2>Ghi Chú của Admin</h2>
-            <div id="admin-notes-list"></div>
-        </div>
         <div class="notes-list" id="notes-list"></div>
         <div class="pagination">
             <button onclick="prevPage()" id="prev-btn">Trang trước</button>
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.27</div>
+        <div class="version">Phiên bản 1.28</div>
     </div>
 
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuuYjmUledswIUOPrTGrPHtRl2FYov4_tUwpepieLTV0Y4vau4MzMObk9R6aOBfOaV/exec";
         const ITEMS_PER_PAGE = 20;
-        const ADMIN_USERNAME = "admin";
         let currentPage = 1;
         let totalNotes = 0;
         let allNotes = [];
-        let adminNotes = [];
         let isSearching = false;
         const statusMessage = document.getElementById('status-message');
 
@@ -589,9 +536,7 @@
         }
 
         async function loadNotes() {
-            const adminNotesList = document.getElementById('admin-notes-list');
             const notesList = document.getElementById('notes-list');
-            adminNotesList.innerHTML = '<div class="loading">Đang tải...</div>';
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             statusMessage.textContent = 'Đang tải ghi chú...';
             statusMessage.style.color = '#2a4365';
@@ -600,9 +545,7 @@
         }
 
         async function syncNotes() {
-            const adminNotesList = document.getElementById('admin-notes-list');
             const notesList = document.getElementById('notes-list');
-            adminNotesList.innerHTML = '<div class="loading">Đang tải...</div>';
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             try {
                 const url = `${SCRIPT_URL}?action=getNotes&username=${encodeURIComponent(username)}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${encodeURIComponent(authToken)}`;
@@ -622,57 +565,29 @@
                     allNotes = data.notes.filter(note => note && typeof note.content === 'string'); // Lọc các ghi chú hợp lệ
                     allNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
-
-                    // Tách ghi chú của admin và người dùng
-                    adminNotes = allNotes.filter(note => note.username === ADMIN_USERNAME);
-                    const userNotes = allNotes.filter(note => note.username !== ADMIN_USERNAME);
                     
                     // Lọc ghi chú nếu đang tìm kiếm
-                    let filteredNotes = userNotes;
+                    let filteredNotes = allNotes;
                     if (isSearching) {
                         const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
-                        filteredNotes = userNotes.filter(note => note.content.toLowerCase().includes(searchQuery));
+                        filteredNotes = allNotes.filter(note => note.content.toLowerCase().includes(searchQuery));
                     }
                     
-                    displayAdminNotes(adminNotes);
                     displayNotes(filteredNotes);
                     updatePagination();
                 } else {
                     statusMessage.textContent = 'Lỗi khi tải ghi chú: ' + (data.message || 'Không có dữ liệu');
                     statusMessage.style.color = 'red';
-                    adminNotesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú admin</div>';
                     notesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú nào</div>';
                 }
             } catch (error) {
                 statusMessage.textContent = 'Lỗi kết nối: ' + error.message;
                 statusMessage.style.color = 'red';
-                adminNotesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú admin</div>';
                 notesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú nào</div>';
                 console.error('Lỗi khi đồng bộ ghi chú:', error);
             } finally {
                 setTimeout(() => { statusMessage.textContent = ''; }, 3000);
             }
-        }
-
-        function displayAdminNotes(notes) {
-            const adminNotesList = document.getElementById('admin-notes-list');
-            adminNotesList.innerHTML = '';
-            if (notes.length === 0) {
-                adminNotesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú admin</div>';
-                return;
-            }
-            notes.forEach(note => {
-                const noteDiv = document.createElement('div');
-                noteDiv.className = 'admin-note-item';
-                const contentDiv = document.createElement('div');
-                contentDiv.className = 'content';
-                contentDiv.textContent = note.content;
-                const span = document.createElement('span');
-                span.textContent = note.timestamp;
-                contentDiv.appendChild(span);
-                noteDiv.appendChild(contentDiv);
-                adminNotesList.appendChild(noteDiv);
-            });
         }
 
         function displayNotes(notes) {
