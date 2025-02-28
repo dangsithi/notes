@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.18</title>
+    <title>Ghi Chú - v1.19</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.18</div>
+        <div class="version">Phiên bản 1.19</div>
     </div>
 
     <script>
@@ -325,7 +325,6 @@
         let currentPage = 1;
         let totalNotes = 0;
         let allNotes = [];
-        let filteredNotes = [];
         let isSearching = false;
         const statusMessage = document.getElementById('status-message');
 
@@ -492,24 +491,11 @@
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             try {
                 const searchQuery = isSearching ? document.getElementById('search-input').value.trim() : '';
-                const params = new URLSearchParams({
-                    action: 'getNotes',
-                    username: username,
-                    page: currentPage,
-                    limit: ITEMS_PER_PAGE,
-                    authToken: authToken
-                });
-                if (searchQuery) {
-                    params.append('search', searchQuery);
-                }
-                const url = `${SCRIPT_URL}?${params.toString()}`;
+                const url = `${SCRIPT_URL}?action=getNotes&username=${encodeURIComponent(username)}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${encodeURIComponent(authToken)}${searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''}`;
                 console.log('Fetching URL:', url); // Debug URL
                 const response = await fetch(url, {
                     method: 'GET',
-                    redirect: 'follow',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
+                    redirect: 'follow'
                 });
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -520,9 +506,8 @@
                 if (data.success) {
                     totalNotes = data.total;
                     allNotes = data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-                    filteredNotes = [...allNotes];
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
-                    displayNotes(filteredNotes);
+                    displayNotes(allNotes);
                     updatePagination();
                 } else {
                     statusMessage.textContent = 'Lỗi khi tải ghi chú: ' + (data.message || 'Không có dữ liệu');
