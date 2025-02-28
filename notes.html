@@ -3,63 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.21</title>
+    <title>Ghi Chú - v1.22</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #e6f0fa, #f0f7ff);
-            color: #2a4365;
+            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            color: #2c3e50;
             min-height: 100vh;
-            transition: background 0.3s ease, color 0.3s ease;
+            transition: background 0.5s ease, color 0.5s ease;
         }
         body.dark-mode {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            color: #e0e0e0;
+            background: linear-gradient(135deg, #2c3e50, #1a2634);
+            color: #ecf0f1;
         }
         .container {
-            max-width: 700px;
-            margin: 20px auto;
-            padding: 0 15px;
+            max-width: 800px;
+            margin: 30px auto;
+            padding: 0 20px;
         }
         .navbar {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
+            transition: background 0.5s ease, box-shadow 0.5s ease;
         }
         body.dark-mode .navbar {
-            background: rgba(34, 40, 49, 0.9);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: rgba(44, 62, 80, 0.95);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
         .navbar h1 {
-            font-size: 24px;
+            font-size: 28px;
+            font-weight: 600;
             margin: 0;
-            color: #1d3557;
+            color: #34495e;
         }
         body.dark-mode .navbar h1 {
-            color: #e0e0e0;
+            color: #ecf0f1;
         }
         .navbar-actions {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
         .navbar-actions span {
-            color: #e63946;
-            text-decoration: underline;
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: 500;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 15px;
+            position: relative;
             transition: color 0.3s ease;
         }
+        .navbar-actions span::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: #e74c3c;
+            left: 0;
+            bottom: -5px;
+            transition: width 0.3s ease;
+        }
+        .navbar-actions span:hover::after {
+            width: 100%;
+        }
         .navbar-actions span:hover {
-            color: #d00000;
+            color: #c0392b;
         }
         .dark-mode-toggle {
             display: flex;
@@ -67,222 +85,238 @@
             gap: 10px;
         }
         .dark-mode-toggle label {
-            font-size: 14px;
-            color: #1d3557;
+            font-size: 15px;
+            color: #34495e;
+            font-weight: 500;
         }
         body.dark-mode .dark-mode-toggle label {
-            color: #e0e0e0;
+            color: #ecf0f1;
         }
         .dark-mode-toggle input[type="checkbox"] {
             appearance: none;
-            width: 40px;
-            height: 20px;
-            background: #d3d3d3;
-            border-radius: 20px;
+            width: 45px;
+            height: 22px;
+            background: #bdc3c7;
+            border-radius: 22px;
             position: relative;
             cursor: pointer;
             outline: none;
             transition: background 0.3s ease;
         }
         .dark-mode-toggle input[type="checkbox"]:checked {
-            background: #457b9d;
+            background: #3498db;
         }
         .dark-mode-toggle input[type="checkbox"]::before {
             content: '';
             position: absolute;
-            width: 16px;
-            height: 16px;
-            background: white;
+            width: 18px;
+            height: 18px;
+            background: #fff;
             border-radius: 50%;
             top: 2px;
             left: 2px;
             transition: transform 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         .dark-mode-toggle input[type="checkbox"]:checked::before {
-            transform: translateX(20px);
+            transform: translateX(23px);
         }
         .note-form {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            margin-bottom: 20px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            transition: background 0.5s ease, box-shadow 0.5s ease;
         }
         body.dark-mode .note-form {
-            background: #222831;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: #34495e;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
         textarea {
             width: 100%;
-            padding: 12px;
-            font-size: 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 15px;
+            font-size: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             box-sizing: border-box;
             resize: vertical;
-            min-height: 120px;
-            transition: border-color 0.3s ease;
-            background: white;
-            color: #2a4365;
+            min-height: 140px;
+            background: #f9fbfc;
+            color: #2c3e50;
+            transition: border-color 0.3s ease, background 0.5s ease;
         }
         body.dark-mode textarea {
-            background: #393e46;
-            color: #e0e0e0;
-            border-color: #555;
+            background: #3d566e;
+            color: #ecf0f1;
+            border-color: #5d6d7e;
         }
         textarea:focus {
-            border-color: #457b9d;
+            border-color: #3498db;
             outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
         }
         .form-buttons {
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            margin-top: 15px;
         }
         button {
-            padding: 10px 20px;
-            font-size: 14px;
-            background: #457b9d;
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: 500;
+            background: #3498db;
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
         button:hover {
-            background: #355f7d;
+            background: #2980b9;
+            transform: translateY(-2px);
         }
         #search-btn {
-            background: #2a9d8f;
+            background: #27ae60;
         }
         #search-btn:hover {
-            background: #21867a;
+            background: #219653;
         }
         .search-bar {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
         }
         #search-input {
             flex-grow: 1;
-            padding: 12px;
-            font-size: 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 15px;
+            font-size: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
             box-sizing: border-box;
-            background: white;
-            transition: border-color 0.3s ease;
-            color: #2a4365;
+            background: #f9fbfc;
+            color: #2c3e50;
+            transition: border-color 0.3s ease, background 0.5s ease;
         }
         body.dark-mode #search-input {
-            background: #393e46;
-            color: #e0e0e0;
-            border-color: #555;
+            background: #3d566e;
+            color: #ecf0f1;
+            border-color: #5d6d7e;
         }
         #search-input:focus {
-            border-color: #457b9d;
+            border-color: #3498db;
             outline: none;
+            box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
         }
         .notes-list {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            background: #fff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: background 0.5s ease, box-shadow 0.5s ease;
         }
         body.dark-mode .notes-list {
-            background: #222831;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: #34495e;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
         }
         .note-item {
-            padding: 15px;
+            padding: 20px;
             border-bottom: 1px solid #e9ecef;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.3s ease;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
         body.dark-mode .note-item {
-            border-bottom: 1px solid #393e46;
+            border-bottom: 1px solid #4a6076;
         }
         .note-item:hover {
-            background: #f8f9fa;
+            background: #f2f6fa;
+            transform: translateY(-2px);
         }
         body.dark-mode .note-item:hover {
-            background: #2a2f38;
+            background: #3d566e;
         }
         .note-item:last-child {
             border-bottom: none;
         }
         .note-item .content {
             flex-grow: 1;
-            margin-right: 15px;
+            margin-right: 20px;
         }
         .note-item span {
-            font-size: 12px;
-            color: #6c757d;
+            font-size: 13px;
+            color: #7f8c8d;
             display: block;
             margin-top: 5px;
+            font-weight: 400;
         }
         body.dark-mode .note-item span {
-            color: #adb5bd;
+            color: #b0bec5;
         }
         .note-item .actions button {
-            padding: 6px 12px;
-            font-size: 12px;
+            padding: 8px 15px;
+            font-size: 14px;
             margin-left: 10px;
+            border-radius: 8px;
         }
         .note-item .actions .edit-btn {
-            background: #f4a261;
+            background: #f39c12;
         }
         .note-item .actions .edit-btn:hover {
-            background: #e76f51;
+            background: #e67e22;
         }
         .note-item .actions .delete-btn {
-            background: #e63946;
+            background: #e74c3c;
         }
         .note-item .actions .delete-btn:hover {
-            background: #d00000;
+            background: #c0392b;
         }
         .loading {
-            font-size: 14px;
-            color: #6c757d;
+            font-size: 15px;
+            color: #7f8c8d;
             text-align: center;
-            padding: 20px;
+            padding: 25px;
+            font-weight: 400;
         }
         body.dark-mode .loading {
-            color: #adb5bd;
+            color: #b0bec5;
         }
         .pagination {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
         }
         .pagination button {
-            margin: 0 5px;
-            padding: 8px 16px;
-            background: #457b9d;
+            margin: 0 8px;
+            padding: 10px 20px;
+            background: #3498db;
+            border-radius: 10px;
         }
         .pagination button:hover {
-            background: #355f7d;
+            background: #2980b9;
         }
         .pagination button:disabled {
-            background: #d3d3d3;
+            background: #bdc3c7;
             cursor: not-allowed;
         }
         .version {
-            font-size: 12px;
-            color: #6c757d;
+            font-size: 13px;
+            color: #7f8c8d;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 25px;
+            font-weight: 400;
         }
         body.dark-mode .version {
-            color: #adb5bd;
+            color: #b0bec5;
         }
         #status-message {
-            margin-top: 10px;
-            font-size: 14px;
+            margin-top: 15px;
+            font-size: 15px;
             text-align: center;
+            font-weight: 500;
         }
         body.dark-mode #status-message {
-            color: #e0e0e0;
+            color: #ecf0f1;
         }
     </style>
 </head>
@@ -316,7 +350,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.21</div>
+        <div class="version">Phiên bản 1.22</div>
     </div>
 
     <script>
