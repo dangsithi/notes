@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.29</title>
+    <title>Ghi Chú - v1.30</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -374,7 +374,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.29</div>
+        <div class="version">Phiên bản 1.30</div>
     </div>
 
     <script>
@@ -401,11 +401,9 @@
             document.getElementById('dark-mode-switch').checked = true;
         }
 
-        // Hàm định dạng thời gian sang UTC+7 và định dạng hh:mm:ss - dd/MM/yyyy
-        function formatTimestampToUTC7(isoString) {
+        // Hàm định dạng thời gian sang định dạng hh:mm:ss - dd/MM/yyyy
+        function formatTimestamp(isoString) {
             const date = new Date(isoString);
-            // Thêm 7 giờ để chuyển từ UTC sang UTC+7
-            date.setHours(date.getHours() + 7);
             
             const hours = String(date.getHours()).padStart(2, '0');
             const minutes = String(date.getMinutes()).padStart(2, '0');
@@ -580,9 +578,9 @@
                     totalNotes = data.total;
                     allNotes = data.notes.filter(note => note && typeof note.content === 'string'); // Lọc các ghi chú hợp lệ
                     
-                    // Chuyển timestamp sang múi giờ +7 và định dạng
+                    // Chỉ định dạng lại timestamp, không thêm múi giờ
                     allNotes.forEach(note => {
-                        note.timestamp = formatTimestampToUTC7(note.timestamp);
+                        note.timestamp = formatTimestamp(note.timestamp);
                     });
                     
                     allNotes.sort((a, b) => {
