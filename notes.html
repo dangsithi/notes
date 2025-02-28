@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.13</title>
+    <title>Ghi Chú - v1.14</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.13</div>
+        <div class="version">Phiên bản 1.14</div>
     </div>
 
     <script>
@@ -327,6 +327,7 @@
         let allNotes = [];
         let filteredNotes = [];
         let isSearching = false;
+        let loadingStatus = document.getElementById('status-message');
 
         const username = localStorage.getItem('loggedInUser');
         const authToken = localStorage.getItem('authToken');
@@ -484,7 +485,10 @@
         async function loadNotes() {
             const notesList = document.getElementById('notes-list');
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
+            loadingStatus.textContent = 'Đang tải ghi chú...';
+            loadingStatus.style.color = '#2a4365';
             await syncNotes();
+            setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
         }
 
         async function syncNotes() {
@@ -503,6 +507,9 @@
                 }
             } catch (error) {
                 console.error('Lỗi khi đồng bộ ghi chú:', error);
+                loadingStatus.textContent = 'Lỗi khi tải ghi chú!';
+                loadingStatus.style.color = 'red';
+                setTimeout(() => { loadingStatus.textContent = ''; }, 3000);
             }
         }
 
@@ -544,8 +551,11 @@
 
         function searchNotes() {
             isSearching = true;
-            currentPage = 1; // Reset về trang 1 khi tìm kiếm
+            currentPage = 1;
+            loadingStatus.textContent = 'Đang tìm kiếm...';
+            loadingStatus.style.color = '#2a4365';
             syncNotes();
+            setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
         }
 
         function updatePagination() {
@@ -558,7 +568,10 @@
         function prevPage() {
             if (currentPage > 1) {
                 currentPage--;
+                loadingStatus.textContent = 'Đang tải...';
+                loadingStatus.style.color = '#2a4365';
                 syncNotes();
+                setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
             }
         }
 
@@ -566,7 +579,10 @@
             const totalPages = Math.ceil(totalNotes / ITEMS_PER_PAGE);
             if (currentPage < totalPages) {
                 currentPage++;
+                loadingStatus.textContent = 'Đang tải...';
+                loadingStatus.style.color = '#2a4365';
                 syncNotes();
+                setTimeout(() => { loadingStatus.textContent = ''; }, 2000);
             }
         }
 
