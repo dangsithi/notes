@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.20</title>
+    <title>Ghi Chú - v1.21</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -198,7 +198,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.2s ease;
+            transition: background 0.3s ease;
         }
         body.dark-mode .note-item {
             border-bottom: 1px solid #393e46;
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.20</div>
+        <div class="version">Phiên bản 1.21</div>
     </div>
 
     <script>
@@ -490,7 +490,6 @@
             const notesList = document.getElementById('notes-list');
             notesList.innerHTML = '<div class="loading">Đang tải...</div>';
             try {
-                const searchQuery = isSearching ? document.getElementById('search-input').value.trim() : '';
                 const url = `${SCRIPT_URL}?action=getNotes&username=${encodeURIComponent(username)}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${encodeURIComponent(authToken)}`;
                 console.log('Fetching URL:', url); // Debug URL
                 const response = await fetch(url, {
@@ -505,12 +504,14 @@
                 console.log('Server response:', data); // Debug dữ liệu trả về
                 if (data.success) {
                     totalNotes = data.total;
-                    allNotes = data.notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    allNotes = data.notes.filter(note => note && typeof note.content === 'string'); // Lọc các ghi chú hợp lệ
+                    allNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
                     
                     // Lọc ghi chú nếu đang tìm kiếm
-                    if (isSearching && searchQuery) {
-                        allNotes = allNotes.filter(note => note.content.toLowerCase().includes(searchQuery.toLowerCase()));
+                    if (isSearching) {
+                        const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+                        allNotes = allNotes.filter(note => note.content.toLowerCase().includes(searchQuery));
                     }
                     
                     displayNotes(allNotes);
