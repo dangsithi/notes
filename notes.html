@@ -585,7 +585,11 @@
                         note.timestamp = formatTimestampToUTC7(note.timestamp);
                     });
                     
-                    allNotes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    allNotes.sort((a, b) => {
+                        // Sắp xếp theo thời gian giảm dần (mới nhất trước)
+                        return new Date(b.timestamp.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1')) - 
+                               new Date(a.timestamp.replace(/(\d{2})\/(\d{2})\/(\d{4})/, '$3-$2-$1'));
+                    });
                     localStorage.setItem(`notes_${username}`, JSON.stringify(allNotes));
                     
                     // Lọc ghi chú nếu đang tìm kiếm
