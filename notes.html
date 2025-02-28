@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.15</title>
+    <title>Ghi Chú - v1.16</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <style>
         body {
@@ -316,7 +316,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.15</div>
+        <div class="version">Phiên bản 1.16</div>
     </div>
 
     <script>
@@ -495,7 +495,13 @@
                 const searchQuery = isSearching ? document.getElementById('search-input').value.toLowerCase().trim() : '';
                 const url = `${SCRIPT_URL}?action=getNotes&username=${username}&page=${currentPage}&limit=${ITEMS_PER_PAGE}&authToken=${authToken}${searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : ''}`;
                 console.log('Fetching URL:', url); // Debug URL
-                const response = await fetch(url, { method: 'GET' });
+                const response = await fetch(url, {
+                    method: 'GET',
+                    redirect: 'follow' // Thêm để xử lý redirect nếu cần
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 const data = await response.json();
                 console.log('Server response:', data); // Debug dữ liệu trả về
                 if (data.success) {
@@ -506,7 +512,7 @@
                     displayNotes(filteredNotes);
                     updatePagination();
                 } else {
-                    statusMessage.textContent = 'Lỗi khi tải ghi chú: ' + data.message;
+                    statusMessage.textContent = 'Lỗi khi tải ghi chú: ' + (data.message || 'Không có dữ liệu');
                     statusMessage.style.color = 'red';
                     notesList.innerHTML = '<div class="loading">Không tìm thấy ghi chú nào</div>';
                 }
