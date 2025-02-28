@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ghi Chú - v1.22</title>
+    <title>Ghi Chú - v1.23</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
@@ -170,11 +170,10 @@
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
+            transition: background 0.3s ease;
         }
         button:hover {
             background: #2980b9;
-            transform: translateY(-2px);
         }
         #search-btn {
             background: #27ae60;
@@ -225,14 +224,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.3s ease, transform 0.2s ease;
+            transition: background 0.3s ease;
         }
         body.dark-mode .note-item {
             border-bottom: 1px solid #4a6076;
         }
         .note-item:hover {
             background: #f2f6fa;
-            transform: translateY(-2px);
         }
         body.dark-mode .note-item:hover {
             background: #3d566e;
@@ -242,6 +240,7 @@
         }
         .note-item .content {
             flex-grow: 1;
+            margin-left: 10px; /* Đẩy sát khung bên trái một chút */
             margin-right: 20px;
         }
         .note-item span {
@@ -254,11 +253,16 @@
         body.dark-mode .note-item span {
             color: #b0bec5;
         }
+        .note-item .actions {
+            display: flex;
+            gap: 10px;
+            margin-right: 0; /* Sát khung bên phải */
+        }
         .note-item .actions button {
             padding: 8px 15px;
             font-size: 14px;
-            margin-left: 10px;
             border-radius: 8px;
+            transition: background 0.3s ease;
         }
         .note-item .actions .edit-btn {
             background: #f39c12;
@@ -291,6 +295,7 @@
             padding: 10px 20px;
             background: #3498db;
             border-radius: 10px;
+            transition: background 0.3s ease;
         }
         .pagination button:hover {
             background: #2980b9;
@@ -350,7 +355,7 @@
             <span id="page-info"></span>
             <button onclick="nextPage()" id="next-btn">Trang sau</button>
         </div>
-        <div class="version">Phiên bản 1.22</div>
+        <div class="version">Phiên bản 1.23</div>
     </div>
 
     <script>
